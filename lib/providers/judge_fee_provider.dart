@@ -28,5 +28,5 @@ final totalTaxableFeesByAssignmentProvider = FutureProvider.family<double, Strin
 // Fees for a judge in a specific event
 final feesForJudgeInEventProvider = FutureProvider.family<List<JudgeFee>, ({String judgeId, String eventId})>((ref, params) async {
   final repository = ref.watch(judgeFeeRepositoryProvider);
-  return repository.getFeesForJudgeInEvent(params.judgeId, params.eventId);
+  return repository.getFeesForJudgeInEvent(judgeId: params.judgeId, eventId: params.eventId);
 });

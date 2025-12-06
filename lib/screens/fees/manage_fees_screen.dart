@@ -230,7 +230,7 @@ class _FeeCard extends StatelessWidget {
               ? Colors.blue.shade100
               : Colors.green.shade100,
           child: Icon(
-            _getIconForFeeType(fee.type),
+            _getIconForFeeType(fee.feeType),
             color: fee.isAutoCalculated ? Colors.blue : Colors.green,
           ),
         ),
@@ -241,9 +241,9 @@ class _FeeCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(_getFeeTypeLabel(fee.type)),
+            Text(_getFeeTypeLabel(fee.feeType)),
             if (fee.hours != null)
-              Text('${fee.hours} hours @ \$${fee.hourlyRate?.toStringAsFixed(2) ?? '0.00'}/hr'),
+              Text('${fee.hours!.toStringAsFixed(1)} hours'),
             Row(
               children: [
                 if (fee.isTaxable)
@@ -304,15 +304,11 @@ class _FeeCard extends StatelessWidget {
     switch (type) {
       case FeeType.sessionRate:
         return Icons.schedule;
-      case FeeType.bonus:
-        return Icons.star;
       case FeeType.meetReferee:
         return Icons.admin_panel_settings;
       case FeeType.headJudge:
         return Icons.workspace_premium;
-      case FeeType.travel:
-        return Icons.directions_car;
-      case FeeType.other:
+      case FeeType.custom:
         return Icons.attach_money;
     }
   }
@@ -321,16 +317,12 @@ class _FeeCard extends StatelessWidget {
     switch (type) {
       case FeeType.sessionRate:
         return 'Session Rate';
-      case FeeType.bonus:
-        return 'Bonus';
       case FeeType.meetReferee:
         return 'Meet Referee';
       case FeeType.headJudge:
         return 'Head Judge';
-      case FeeType.travel:
-        return 'Travel';
-      case FeeType.other:
-        return 'Other';
+      case FeeType.custom:
+        return 'Custom';
     }
   }
 }
@@ -357,7 +349,7 @@ class _AddEditFeeDialogState extends ConsumerState<_AddEditFeeDialog> {
   late TextEditingController _hoursController;
   late TextEditingController _rateController;
   
-  FeeType _selectedType = FeeType.bonus;
+  FeeType _selectedType = FeeType.custom;
   bool _isTaxable = true;
   bool _useHourly = false;
 
@@ -371,12 +363,10 @@ class _AddEditFeeDialogState extends ConsumerState<_AddEditFeeDialog> {
     _hoursController = TextEditingController(
       text: widget.fee?.hours?.toString() ?? '',
     );
-    _rateController = TextEditingController(
-      text: widget.fee?.hourlyRate?.toStringAsFixed(2) ?? '',
-    );
+    _rateController = TextEditingController();
     
     if (widget.fee != null) {
-      _selectedType = widget.fee!.type;
+      _selectedType = widget.fee!.feeType;
       _isTaxable = widget.fee!.isTaxable;
       _useHourly = widget.fee!.hours != null;
     }
@@ -538,26 +528,28 @@ class _AddEditFeeDialogState extends ConsumerState<_AddEditFeeDialog> {
 
     try {
       final repository = ref.read(judgeFeeRepositoryProvider);
-      final now = DateTime.now();
-
-      final fee = JudgeFee(
-        id: widget.fee?.id ?? const Uuid().v4(),
-        judgeAssignmentId: widget.assignmentId,
-        type: _selectedType,
-        description: _descriptionController.text.trim(),
-        amount: double.parse(_amountController.text),
-        hours: _useHourly ? double.tryParse(_hoursController.text) : null,
-        hourlyRate: _useHourly ? double.tryParse(_rateController.text) : null,
-        isTaxable: _isTaxable,
-        isAutoCalculated: false,
-        createdAt: widget.fee?.createdAt ?? now,
-        updatedAt: now,
-      );
 
       if (widget.fee == null) {
-        await repository.createFee(fee);
+        await repository.createFee(
+          judgeAssignmentId: widget.assignmentId,
+          feeType: _selectedType,
+          description: _descriptionController.text.trim(),
+          amount: double.parse(_amountController.text),
+          hours: _useHourly ? double.tryParse(_hoursController.text) : null,
+          isTaxable: _isTaxable,
+          isAutoCalculated: false,
+        );
       } else {
-        await repository.updateFee(fee);
+        final now = DateTime.now();
+        final updatedFee = widget.fee!.copyWith(
+          feeType: _selectedType,
+          description: _descriptionController.text.trim(),
+          amount: double.parse(_amountController.text),
+          hours: _useHourly ? double.tryParse(_hoursController.text) : null,
+          isTaxable: _isTaxable,
+          updatedAt: now,
+        );
+        await repository.updateFee(updatedFee);
       }
 
       widget.onSaved();
@@ -581,16 +573,12 @@ class _AddEditFeeDialogState extends ConsumerState<_AddEditFeeDialog> {
     switch (type) {
       case FeeType.sessionRate:
         return 'Session Rate';
-      case FeeType.bonus:
-        return 'Bonus';
       case FeeType.meetReferee:
         return 'Meet Referee';
       case FeeType.headJudge:
         return 'Head Judge';
-      case FeeType.travel:
-        return 'Travel';
-      case FeeType.other:
-        return 'Other';
+      case FeeType.custom:
+        return 'Custom';
     }
   }
 }
