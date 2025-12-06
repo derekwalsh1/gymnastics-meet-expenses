@@ -99,11 +99,12 @@ class _AddEditJudgeScreenState extends ConsumerState<AddEditJudgeScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final judgeId = widget.judge?.id ?? const Uuid().v4();
       final now = DateTime.now();
+      String judgeId;
 
       if (widget.judge != null) {
         // Update existing judge
+        judgeId = widget.judge!.id;
         final updatedJudge = widget.judge!.copyWith(
           firstName: _firstNameController.text.trim(),
           lastName: _lastNameController.text.trim(),
@@ -117,8 +118,8 @@ class _AddEditJudgeScreenState extends ConsumerState<AddEditJudgeScreen> {
         );
         await ref.read(judgeNotifierProvider.notifier).updateJudge(updatedJudge);
       } else {
-        // Add new judge
-        await ref.read(judgeNotifierProvider.notifier).addJudge(
+        // Add new judge and capture the returned judge ID
+        final newJudge = await ref.read(judgeNotifierProvider.notifier).addJudge(
           firstName: _firstNameController.text.trim(),
           lastName: _lastNameController.text.trim(),
           contactInfo: _contactInfoController.text.trim().isEmpty
@@ -128,6 +129,7 @@ class _AddEditJudgeScreenState extends ConsumerState<AddEditJudgeScreen> {
               ? null
               : _notesController.text.trim(),
         );
+        judgeId = newJudge.id;
       }
 
       // Now handle certifications

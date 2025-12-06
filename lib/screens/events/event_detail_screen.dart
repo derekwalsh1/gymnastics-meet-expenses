@@ -443,19 +443,33 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 
   void _showEventMenu(BuildContext context) {
+    final eventAsync = ref.read(eventProvider(widget.eventId));
+    final event = eventAsync.value;
+    final isArchived = event?.status == EventStatus.archived;
+    
     showModalBottomSheet(
       context: context,
       builder: (context) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ListTile(
-            leading: const Icon(Icons.archive),
-            title: const Text('Archive Event'),
-            onTap: () {
-              Navigator.pop(context);
-              _confirmArchiveEvent();
-            },
-          ),
+          if (isArchived)
+            ListTile(
+              leading: const Icon(Icons.unarchive),
+              title: const Text('Unarchive Event'),
+              onTap: () {
+                Navigator.pop(context);
+                _confirmUnarchiveEvent();
+              },
+            )
+          else
+            ListTile(
+              leading: const Icon(Icons.archive),
+              title: const Text('Archive Event'),
+              onTap: () {
+                Navigator.pop(context);
+                _confirmArchiveEvent();
+              },
+            ),
           ListTile(
             leading: const Icon(Icons.delete, color: Colors.red),
             title: const Text('Delete Event', style: TextStyle(color: Colors.red)),
@@ -513,6 +527,56 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error archiving event: $e')),
+          );
+        }
+      }
+    }
+  }
+  
+  Future<void> _confirmUnarchiveEvent() async {
+    final eventAsync = ref.read(eventProvider(widget.eventId));
+    final event = eventAsync.value;
+    
+    if (event == null) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Unarchive Event'),
+        content: Text('Unarchive "${event.name}"? It will be restored to the appropriate status.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Unarchive'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      try {
+        final repository = ref.read(eventRepositoryProvider);
+        await repository.unarchiveEvent(widget.eventId);
+        
+        // Invalidate providers to refresh data
+        ref.invalidate(filteredEventsProvider);
+        ref.invalidate(eventsProvider);
+        ref.invalidate(upcomingEventsProvider);
+        ref.invalidate(eventProvider(widget.eventId));
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Event unarchived successfully')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error unarchiving event: $e')),
           );
         }
       }

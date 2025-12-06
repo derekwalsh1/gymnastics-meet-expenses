@@ -121,7 +121,7 @@ class JudgeNotifier extends StateNotifier<AsyncValue<List<Judge>>> {
     }
   }
 
-  Future<void> addJudge({
+  Future<Judge> addJudge({
     required String firstName,
     required String lastName,
     String? notes,
@@ -141,6 +141,7 @@ class JudgeNotifier extends StateNotifier<AsyncValue<List<Judge>>> {
 
       await _repository.createJudge(judge);
       await loadJudges();
+      return judge;
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
       rethrow;

@@ -66,7 +66,12 @@ class EventRepository {
             orderBy: 'startDate DESC',
           );
 
-    return maps.map((map) => Event.fromMap(map)).toList();
+    final events = maps.map((map) => Event.fromMap(map)).toList();
+    
+    // Auto-update status based on current date
+    await _updateEventStatuses(events);
+    
+    return events;
   }
 
   Future<List<Event>> getEventsByAssociation(String associationId) async {
@@ -78,7 +83,12 @@ class EventRepository {
       orderBy: 'startDate DESC',
     );
 
-    return maps.map((map) => Event.fromMap(map)).toList();
+    final events = maps.map((map) => Event.fromMap(map)).toList();
+    
+    // Auto-update status based on current date
+    await _updateEventStatuses(events);
+    
+    return events;
   }
 
   Future<List<Event>> getUpcomingEvents() async {
@@ -92,7 +102,41 @@ class EventRepository {
       orderBy: 'startDate ASC',
     );
 
-    return maps.map((map) => Event.fromMap(map)).toList();
+    final events = maps.map((map) => Event.fromMap(map)).toList();
+    
+    // Auto-update status based on current date
+    await _updateEventStatuses(events);
+    
+    return events;
+  }
+  
+  /// Auto-update event statuses based on current date
+  Future<void> _updateEventStatuses(List<Event> events) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    
+    for (final event in events) {
+      // Skip archived events
+      if (event.status == EventStatus.archived) continue;
+      
+      final start = DateTime(event.startDate.year, event.startDate.month, event.startDate.day);
+      final end = DateTime(event.endDate.year, event.endDate.month, event.endDate.day);
+      
+      EventStatus correctStatus;
+      if (today.isAfter(end)) {
+        correctStatus = EventStatus.completed;
+      } else if (today.isBefore(start)) {
+        correctStatus = EventStatus.upcoming;
+      } else {
+        // Today is between start and end (inclusive)
+        correctStatus = EventStatus.ongoing;
+      }
+      
+      // Update if status is incorrect
+      if (event.status != correctStatus) {
+        await updateEventStatus(event.id, correctStatus);
+      }
+    }
   }
 
   Future<List<Event>> getPastEvents() async {
@@ -149,6 +193,28 @@ class EventRepository {
   // Archive
   Future<void> archiveEvent(String id) async {
     await updateEventStatus(id, EventStatus.archived);
+  }
+  
+  // Unarchive - restores event to appropriate status based on dates
+  Future<void> unarchiveEvent(String id) async {
+    final event = await getEventById(id);
+    if (event == null) return;
+    
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final start = DateTime(event.startDate.year, event.startDate.month, event.startDate.day);
+    final end = DateTime(event.endDate.year, event.endDate.month, event.endDate.day);
+    
+    EventStatus correctStatus;
+    if (today.isAfter(end)) {
+      correctStatus = EventStatus.completed;
+    } else if (today.isBefore(start)) {
+      correctStatus = EventStatus.upcoming;
+    } else {
+      correctStatus = EventStatus.ongoing;
+    }
+    
+    await updateEventStatus(id, correctStatus);
   }
 
   // Helper methods

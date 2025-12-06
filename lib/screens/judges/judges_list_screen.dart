@@ -355,26 +355,21 @@ class _JudgeCard extends StatelessWidget {
             ),
           ),
         ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                judge.fullName,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            if (associations.isNotEmpty) ...[
-              const SizedBox(width: 8),
-              ...associations.map((assoc) => Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: _AssociationBadge(association: assoc),
-              )),
-            ],
-          ],
+        title: Text(
+          judge.fullName,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (associations.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                children: associations.map((assoc) => _AssociationBadge(association: assoc)).toList(),
+              ),
+            ],
             if (hasCerts) ...[
               const SizedBox(height: 4),
               Text(

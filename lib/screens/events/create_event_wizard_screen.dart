@@ -88,7 +88,15 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
   }
 
   Future<void> _createEvent() async {
-    if (!_formKey.currentState!.validate()) return;
+    // Validate basic info
+    if (_formKey.currentState?.validate() == false) return;
+    
+    if (_startDate == null || _endDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select start and end dates')),
+      );
+      return;
+    }
 
     print('DEBUG: Starting event creation...');
     
@@ -100,11 +108,28 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
 
       print('DEBUG: Creating event with name: ${_nameController.text}');
       
+      // Calculate status based on dates
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final start = DateTime(_startDate!.year, _startDate!.month, _startDate!.day);
+      final end = DateTime(_endDate!.year, _endDate!.month, _endDate!.day);
+      
+      final EventStatus eventStatus;
+      if (today.isAfter(end)) {
+        eventStatus = EventStatus.completed;
+      } else if (today.isBefore(start)) {
+        eventStatus = EventStatus.upcoming;
+      } else {
+        // Today is between start and end (inclusive)
+        eventStatus = EventStatus.ongoing;
+      }
+      
       // Create the event
       final event = await eventRepo.createEvent(
         name: _nameController.text,
         startDate: _startDate!,
         endDate: _endDate!,
+        status: eventStatus,
         location: EventLocation(
           venueName: _venueController.text,
           address: _addressController.text,
@@ -336,8 +361,8 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
                     final date = await showDatePicker(
                       context: context,
                       initialDate: _startDate ?? DateTime.now(),
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                      firstDate: DateTime.now().subtract(const Duration(days: 3650)), // 10 years ago
+                      lastDate: DateTime.now().add(const Duration(days: 730)), // 2 years ahead
                     );
                     if (date != null) setState(() => _startDate = date);
                   },
@@ -352,8 +377,8 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
                     final date = await showDatePicker(
                       context: context,
                       initialDate: _endDate ?? _startDate ?? DateTime.now(),
-                      firstDate: _startDate ?? DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                      firstDate: _startDate ?? DateTime.now().subtract(const Duration(days: 3650)),
+                      lastDate: DateTime.now().add(const Duration(days: 730)),
                     );
                     if (date != null) setState(() => _endDate = date);
                   },
@@ -452,39 +477,66 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
         ),
         const SizedBox(height: 16),
 
-        ...templates.map((template) => Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: RadioListTile<EventTemplate>(
-            value: template,
-            groupValue: _selectedTemplate,
-            onChanged: (value) {
-              setState(() {
-                _selectedTemplate = value;
-                if (value != null) {
-                  _numberOfDays = value.days;
-                  _sessionsPerDay = value.sessionsPerDay;
-                  _floorsPerSession = value.floorsPerSession;
-                }
-              });
-            },
-            title: Text(
-              template.name,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(template.description),
-                const SizedBox(height: 4),
-                Text(
-                  '${template.days} day(s) • ${template.sessionsPerDay} session(s)/day • ${template.floorsPerSession} floor(s)/session',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+        ...templates.map((template) {
+          final isSelected = _selectedTemplate?.type == template.type;
+          return Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            color: isSelected 
+                ? Theme.of(context).colorScheme.primaryContainer 
+                : null,
+            elevation: isSelected ? 4 : 1,
+            child: InkWell(
+              onTap: () {
+                setState(() {
+                  _selectedTemplate = template;
+                  _numberOfDays = template.days;
+                  _sessionsPerDay = template.sessionsPerDay;
+                  _floorsPerSession = template.floorsPerSession;
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Radio<EventTemplateType>(
+                      value: template.type,
+                      groupValue: _selectedTemplate?.type,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedTemplate = template;
+                          _numberOfDays = template.days;
+                          _sessionsPerDay = template.sessionsPerDay;
+                          _floorsPerSession = template.floorsPerSession;
+                        });
+                      },
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            template.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            template.description,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${template.days} day(s) • ${template.sessionsPerDay} session(s)/day • ${template.floorsPerSession} floor(s)/session',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-            isThreeLine: true,
-          ),
-        )),
+          );
+        }),
       ],
     );
   }

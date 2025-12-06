@@ -11,6 +11,9 @@ class EventsListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final eventsAsync = ref.watch(filteredEventsProvider);
+    final statusFilter = ref.watch(eventStatusFilterProvider);
+    final associationFilter = ref.watch(eventAssociationFilterProvider);
+    final hasActiveFilters = statusFilter != null || associationFilter != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -21,7 +24,24 @@ class EventsListScreen extends ConsumerWidget {
         title: const Text('Events'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_list),
+            icon: Stack(
+              children: [
+                const Icon(Icons.filter_list),
+                if (hasActiveFilters)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             onPressed: () => _showFilterDialog(context, ref),
           ),
         ],
