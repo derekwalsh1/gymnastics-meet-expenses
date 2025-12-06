@@ -44,9 +44,7 @@ class HomeScreen extends StatelessWidget {
                     icon: Icons.event,
                     title: 'New Event',
                     subtitle: 'Create a meet',
-                    onTap: () {
-                      // TODO: Navigate to create event
-                    },
+                    onTap: () => context.go('/events/create'),
                   ),
                   _QuickActionCard(
                     icon: Icons.people,

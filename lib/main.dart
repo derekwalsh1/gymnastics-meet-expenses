@@ -103,6 +103,19 @@ final _router = GoRouter(
       builder: (context, state) => const CreateEventWizardScreen(),
     ),
     GoRoute(
+      path: '/events/:eventId/floors/:floorId/assign-judge',
+      builder: (context, state) {
+        final eventId = state.pathParameters['eventId']!;
+        final floorId = state.pathParameters['floorId']!;
+        final sessionId = state.uri.queryParameters['sessionId']!;
+        return AssignJudgeScreen(
+          eventId: eventId,
+          floorId: floorId,
+          sessionId: sessionId,
+        );
+      },
+    ),
+    GoRoute(
       path: '/events/:id',
       builder: (context, state) {
         final id = state.pathParameters['id']!;
