@@ -30,11 +30,12 @@ class AssignJudgeScreen extends ConsumerStatefulWidget {
 }
 
 class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
-  String? selectedJudgeId;
+  final Set<String> selectedJudgeIds = {};
   String? selectedRole;
   double? customHourlyRate;
   final TextEditingController _rateController = TextEditingController();
   String _searchQuery = '';
+  bool _assigningJudges = false;
 
   @override
   void dispose() {
@@ -94,7 +95,7 @@ class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
             _buildSearchBar(),
             const Divider(height: 1),
             Expanded(child: _buildJudgesList(event, session)),
-            if (selectedJudgeId != null) ...[
+            if (selectedJudgeIds.isNotEmpty) ...[
               const Divider(height: 1),
               _buildAssignmentDetails(event, session),
             ],
@@ -111,12 +112,35 @@ class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            event.name,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      event.name,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text('${session.name} - ${floor.name}'),
+                  ],
+                ),
+              ),
+              if (selectedJudgeIds.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    '${selectedJudgeIds.length} selected',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text('${session.name} - ${floor.name}'),
           if (event.associationId != null) ...[
             const SizedBox(height: 4),
             Chip(
@@ -238,7 +262,7 @@ class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
 
   Widget _buildJudgeCard(JudgeWithLevels judgeWithLevels, Event event) {
     final judge = judgeWithLevels.judge;
-    final isSelected = selectedJudgeId == judge.id;
+    final isSelected = selectedJudgeIds.contains(judge.id);
 
     // Get the level for this event's association
     JudgeLevel? relevantLevel;
@@ -256,12 +280,17 @@ class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       color: isSelected ? Colors.blue[50] : null,
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: isSelected ? Colors.blue : Colors.grey,
-          child: Text(
-            judge.firstName[0] + judge.lastName[0],
-            style: const TextStyle(color: Colors.white),
-          ),
+        leading: Checkbox(
+          value: isSelected,
+          onChanged: (value) {
+            setState(() {
+              if (value == true) {
+                selectedJudgeIds.add(judge.id);
+              } else {
+                selectedJudgeIds.remove(judge.id);
+              }
+            });
+          },
         ),
         title: Text('${judge.firstName} ${judge.lastName}'),
         subtitle: relevantLevel != null
@@ -271,32 +300,21 @@ class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
               )
             : null,
         trailing: relevantLevel != null
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '\$${relevantLevel.defaultHourlyRate.toStringAsFixed(2)}/hr',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                  if (isSelected)
-                    const Icon(Icons.check_circle, color: Colors.blue, size: 20),
-                ],
+            ? Text(
+                '\$${relevantLevel.defaultHourlyRate.toStringAsFixed(2)}/hr',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
               )
             : null,
         selected: isSelected,
         onTap: () {
           setState(() {
-            selectedJudgeId = isSelected ? null : judge.id;
-            if (!isSelected) {
-              // Set default rate from level
-              if (relevantLevel != null) {
-                _rateController.text = relevantLevel.defaultHourlyRate.toStringAsFixed(2);
-                customHourlyRate = null;
-              }
+            if (isSelected) {
+              selectedJudgeIds.remove(judge.id);
+            } else {
+              selectedJudgeIds.add(judge.id);
             }
           });
         },
@@ -305,158 +323,171 @@ class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
   }
 
   Widget _buildAssignmentDetails(Event event, EventSession session) {
-    final judgesAsync = ref.watch(judgesWithLevelsProvider);
-
-    return judgesAsync.when(
-      data: (judges) {
-        final selectedJudge = judges.firstWhere(
-          (j) => j.judge.id == selectedJudgeId,
-          orElse: () => throw Exception('Judge not found'),
-        );
-
-        JudgeLevel? relevantLevel;
-        if (event.associationId != null) {
-          try {
-            relevantLevel = selectedJudge.levels.firstWhere(
-              (level) => level.association == event.associationId,
-            );
-          } catch (_) {
-            // No level found
-          }
-        }
-
-        final defaultRate = relevantLevel?.defaultHourlyRate ?? 0.0;
-
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, -2),
-              ),
-            ],
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, -2),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Assign ${selectedJudgeIds.length} ${selectedJudgeIds.length == 1 ? 'Judge' : 'Judges'}',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            decoration: const InputDecoration(
+              labelText: 'Role (Optional)',
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+            initialValue: selectedRole,
+            items: const [
+              DropdownMenuItem(value: null, child: Text('No specific role')),
+              DropdownMenuItem(value: 'Meet Referee', child: Text('Meet Referee')),
+              DropdownMenuItem(value: 'Head Judge', child: Text('Head Judge')),
+              DropdownMenuItem(value: 'Panel Judge', child: Text('Panel Judge')),
+              DropdownMenuItem(value: 'Floor Judge', child: Text('Floor Judge')),
+            ],
+            onChanged: (value) {
+              setState(() {
+                selectedRole = value;
+              });
+            },
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _rateController,
+            decoration: const InputDecoration(
+              labelText: 'Custom Hourly Rate (Optional)',
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              prefixText: '\$ ',
+              helperText: 'Leave empty to use default rate for each judge',
+            ),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (value) {
+              final parsed = double.tryParse(value);
+              setState(() {
+                customHourlyRate = parsed;
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          Row(
             children: [
-              const Text(
-                'Assignment Details',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  labelText: 'Role (Optional)',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _assigningJudges ? null : () {
+                    setState(() {
+                      selectedJudgeIds.clear();
+                      selectedRole = null;
+                      customHourlyRate = null;
+                      _rateController.clear();
+                    });
+                  },
+                  child: const Text('Clear'),
                 ),
-                initialValue: selectedRole,
-                items: const [
-                  DropdownMenuItem(value: null, child: Text('No specific role')),
-                  DropdownMenuItem(value: 'Meet Referee', child: Text('Meet Referee')),
-                  DropdownMenuItem(value: 'Head Judge', child: Text('Head Judge')),
-                  DropdownMenuItem(value: 'Panel Judge', child: Text('Panel Judge')),
-                  DropdownMenuItem(value: 'Floor Judge', child: Text('Floor Judge')),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    selectedRole = value;
-                  });
-                },
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _rateController,
-                decoration: InputDecoration(
-                  labelText: 'Hourly Rate',
-                  border: const OutlineInputBorder(),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  prefixText: '\$ ',
-                  helperText: 'Default: \$${defaultRate.toStringAsFixed(2)}/hr',
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: _assigningJudges ? null : _assignJudges,
+                  child: _assigningJudges
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Assign Judges'),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                onChanged: (value) {
-                  final parsed = double.tryParse(value);
-                  setState(() {
-                    customHourlyRate = parsed;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          selectedJudgeId = null;
-                          selectedRole = null;
-                          customHourlyRate = null;
-                          _rateController.clear();
-                        });
-                      },
-                      child: const Text('Cancel'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton(
-                      onPressed: _assignJudge,
-                      child: const Text('Assign Judge'),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
-        );
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+        ],
+      ),
     );
   }
 
-  Future<void> _assignJudge() async {
-    if (selectedJudgeId == null) return;
+  Future<void> _assignJudges() async {
+    if (selectedJudgeIds.isEmpty) return;
+
+    setState(() {
+      _assigningJudges = true;
+    });
 
     try {
       final judges = await ref.read(judgesWithLevelsProvider.future);
-      final selectedJudge = judges.firstWhere(
-        (j) => j.judge.id == selectedJudgeId,
-      );
-
       final event = await ref.read(eventProvider(widget.eventId).future);
       if (event == null) throw Exception('Event not found');
 
-      // Create the assignment
-      await JudgeAssignmentRepository().createAssignment(
-        eventFloorId: widget.floorId,
-        judge: selectedJudge,
-        association: event.associationId ?? '',
-        role: selectedRole,
-        customHourlyRate: customHourlyRate,
-      );
+      int successCount = 0;
+      int failCount = 0;
+
+      // Assign all selected judges
+      for (final judgeId in selectedJudgeIds) {
+        try {
+          final selectedJudge = judges.firstWhere((j) => j.judge.id == judgeId);
+
+          await JudgeAssignmentRepository().createAssignment(
+            eventFloorId: widget.floorId,
+            judge: selectedJudge,
+            association: event.associationId ?? '',
+            role: selectedRole,
+            customHourlyRate: customHourlyRate,
+          );
+          successCount++;
+        } catch (e) {
+          failCount++;
+          print('Error assigning judge $judgeId: $e');
+        }
+      }
 
       if (mounted) {
         // Invalidate providers to refresh data
         ref.invalidate(assignmentsByFloorProvider(widget.floorId));
         ref.invalidate(availableJudgesForSessionProvider(widget.sessionId));
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Judge assigned successfully')),
-        );
+        // Clear selection after successful assignment
+        setState(() {
+          selectedJudgeIds.clear();
+          selectedRole = null;
+          customHourlyRate = null;
+          _rateController.clear();
+          _assigningJudges = false;
+        });
 
-        context.pop();
+        if (successCount > 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                failCount > 0
+                    ? '$successCount judge(s) assigned successfully, $failCount failed'
+                    : '$successCount judge(s) assigned successfully',
+              ),
+            ),
+          );
+        }
+
+        // Don't pop - allow assigning more judges
       }
     } catch (e) {
       if (mounted) {
+        setState(() {
+          _assigningJudges = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error assigning judge: $e')),
+          SnackBar(content: Text('Error assigning judges: $e')),
         );
       }
     }

@@ -75,27 +75,64 @@ class EventsListScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Filter Events'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: EventStatus.values.map((status) {
-            return ListTile(
-              title: Text(status.name.toUpperCase()),
-              onTap: () {
-                ref.read(eventStatusFilterProvider.notifier).state = status;
-                Navigator.pop(context);
-              },
-            );
-          }).toList()
-            ..insert(
-              0,
-              ListTile(
-                title: const Text('ALL'),
-                onTap: () {
-                  ref.read(eventStatusFilterProvider.notifier).state = null;
-                  Navigator.pop(context);
-                },
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'By Status',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
               ),
-            ),
+              const SizedBox(height: 8),
+              ...[
+                ListTile(
+                  dense: true,
+                  title: const Text('All Statuses'),
+                  onTap: () {
+                    ref.read(eventStatusFilterProvider.notifier).state = null;
+                    Navigator.pop(context);
+                  },
+                ),
+                ...EventStatus.values.map((status) {
+                  return ListTile(
+                    dense: true,
+                    title: Text(status.name.toUpperCase()),
+                    onTap: () {
+                      ref.read(eventStatusFilterProvider.notifier).state = status;
+                      Navigator.pop(context);
+                    },
+                  );
+                }),
+              ],
+              const Divider(),
+              const Text(
+                'By Association',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              ),
+              const SizedBox(height: 8),
+              ...[
+                ListTile(
+                  dense: true,
+                  title: const Text('All Associations'),
+                  onTap: () {
+                    ref.read(eventAssociationFilterProvider.notifier).state = null;
+                    Navigator.pop(context);
+                  },
+                ),
+                ...['NAWGJ', 'NGA', 'USAG', 'AAU'].map((association) {
+                  return ListTile(
+                    dense: true,
+                    title: Text(association),
+                    onTap: () {
+                      ref.read(eventAssociationFilterProvider.notifier).state = association;
+                      Navigator.pop(context);
+                    },
+                  );
+                }),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -155,7 +192,17 @@ class _EventCard extends StatelessWidget {
             ),
           ],
         ),
-        trailing: _StatusBadge(status: event.status),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (event.associationId != null)
+              _AssociationBadge(association: event.associationId!),
+            const SizedBox(height: 4),
+            _StatusBadge(status: event.status),
+          ],
+        ),
         isThreeLine: true,
       ),
     );
@@ -222,6 +269,50 @@ class _StatusBadge extends StatelessWidget {
         return Colors.orange;
       case EventStatus.archived:
         return Colors.grey;
+    }
+  }
+}
+
+class _AssociationBadge extends StatelessWidget {
+  final String association;
+
+  const _AssociationBadge({required this.association});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: _getAssociationColor(association).withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _getAssociationColor(association).withOpacity(0.5),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        association,
+        style: TextStyle(
+          color: _getAssociationColor(association),
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Color _getAssociationColor(String association) {
+    switch (association.toUpperCase()) {
+      case 'NAWGJ':
+        return Colors.purple;
+      case 'NGA':
+        return Colors.indigo;
+      case 'USAG':
+        return Colors.blue;
+      case 'AAU':
+        return Colors.teal;
+      default:
+        return Colors.blueGrey;
     }
   }
 }

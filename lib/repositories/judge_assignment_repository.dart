@@ -1,13 +1,17 @@
 import 'package:uuid/uuid.dart';
 import '../models/judge_assignment.dart';
 import '../models/judge_with_level.dart';
+import '../models/judge_fee.dart';
 import '../services/database_service.dart';
+import 'event_floor_repository.dart';
+import 'event_session_repository.dart';
+import 'judge_fee_repository.dart';
 
 class JudgeAssignmentRepository {
   final DatabaseService _dbService = DatabaseService.instance;
   final _uuid = const Uuid();
 
-  // Create assignment with judge snapshot
+  // Create assignment with judge snapshot and auto-create session fee
   Future<JudgeAssignment> createAssignment({
     required String eventFloorId,
     required JudgeWithLevels judge,
@@ -41,6 +45,36 @@ class JudgeAssignmentRepository {
     );
 
     await db.insert('judge_assignments', assignment.toMap());
+
+    // Auto-create session fee
+    try {
+      final floorRepo = EventFloorRepository();
+      final sessionRepo = EventSessionRepository();
+      final feeRepo = JudgeFeeRepository();
+
+      final floor = await floorRepo.getEventFloorById(eventFloorId);
+      if (floor != null) {
+        final session = await sessionRepo.getEventSessionById(floor.eventSessionId);
+        if (session != null) {
+          final sessionHours = session.durationInHours;
+          final amount = assignment.hourlyRate * sessionHours;
+
+          await feeRepo.createFee(
+            judgeAssignmentId: assignment.id,
+            feeType: FeeType.sessionRate,
+            description: 'Session fee for ${session.name}',
+            amount: amount,
+            hours: sessionHours,
+            isAutoCalculated: true,
+            isTaxable: true,
+          );
+        }
+      }
+    } catch (e) {
+      print('Warning: Failed to auto-create session fee: $e');
+      // Don't fail the assignment if fee creation fails
+    }
+
     return assignment;
   }
 
@@ -126,6 +160,12 @@ class JudgeAssignmentRepository {
   // Delete
   Future<void> deleteAssignment(String id) async {
     final db = await _dbService.database;
+    
+    // Delete associated fees first
+    final feeRepo = JudgeFeeRepository();
+    await feeRepo.deleteFeesForAssignment(id);
+    
+    // Then delete the assignment
     await db.delete(
       'judge_assignments',
       where: 'id = ?',

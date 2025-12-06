@@ -49,16 +49,24 @@ final eventsByAssociationProvider = FutureProvider.family<List<Event>, String>((
 
 // Event filter state
 final eventStatusFilterProvider = StateProvider<EventStatus?>((ref) => null);
+final eventAssociationFilterProvider = StateProvider<String?>((ref) => null);
 final eventSearchQueryProvider = StateProvider<String>((ref) => '');
 
 // Filtered events provider
 final filteredEventsProvider = FutureProvider<List<Event>>((ref) async {
   final repository = ref.watch(eventRepositoryProvider);
   final statusFilter = ref.watch(eventStatusFilterProvider);
+  final associationFilter = ref.watch(eventAssociationFilterProvider);
   final searchQuery = ref.watch(eventSearchQueryProvider);
 
   var events = await repository.getAllEvents(status: statusFilter);
 
+  // Filter by association
+  if (associationFilter != null && associationFilter.isNotEmpty) {
+    events = events.where((event) => event.associationId == associationFilter).toList();
+  }
+
+  // Filter by search query
   if (searchQuery.isNotEmpty) {
     final query = searchQuery.toLowerCase();
     events = events.where((event) {
