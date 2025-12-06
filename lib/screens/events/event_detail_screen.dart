@@ -8,6 +8,7 @@ import '../../models/event_session.dart';
 import '../../models/event_floor.dart';
 import '../../models/judge_assignment.dart';
 import '../../providers/event_provider.dart';
+import '../../providers/judge_fee_provider.dart';
 import '../../repositories/event_day_repository.dart';
 import '../../repositories/event_session_repository.dart';
 import '../../repositories/event_floor_repository.dart';
@@ -359,39 +360,85 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
               }
 
               return Column(
-                children: assignments.map((assignment) => 
-                  ListTile(
-                    dense: true,
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.blue,
-                      child: Text(
-                        assignment.judgeFirstName[0] + assignment.judgeLastName[0],
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
-                      ),
-                    ),
-                    title: Text(assignment.judgeFullName),
-                    subtitle: Text(
-                      '${assignment.judgeAssociation} - ${assignment.judgeLevel}${assignment.role != null ? ' (${assignment.role})' : ''}',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '\$${assignment.hourlyRate.toStringAsFixed(2)}/hr',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                children: assignments.map((assignment) {
+                  return Consumer(
+                    builder: (context, ref, child) {
+                      final totalFeesAsync = ref.watch(totalFeesByAssignmentProvider(assignment.id));
+                      
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: ListTile(
+                          dense: true,
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.blue,
+                            child: Text(
+                              assignment.judgeFirstName[0] + assignment.judgeLastName[0],
+                              style: const TextStyle(color: Colors.white, fontSize: 12),
+                            ),
                           ),
+                          title: Text(assignment.judgeFullName),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${assignment.judgeAssociation} - ${assignment.judgeLevel}${assignment.role != null ? ' (${assignment.role})' : ''}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Text(
+                                    '\$${assignment.hourlyRate.toStringAsFixed(2)}/hr',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text('•', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                  const SizedBox(width: 8),
+                                  totalFeesAsync.when(
+                                    data: (total) => Text(
+                                      'Total: \$${total.toStringAsFixed(2)}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                    loading: () => const SizedBox(
+                                      width: 12,
+                                      height: 12,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                    error: (_, __) => const Text('--', style: TextStyle(fontSize: 12)),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              TextButton.icon(
+                                onPressed: () => context.push('/assignments/${assignment.id}/fees?judgeName=${Uri.encodeComponent(assignment.judgeFullName)}'),
+                                icon: const Icon(Icons.attach_money, size: 16),
+                                label: const Text('Manage Fees', style: TextStyle(fontSize: 12)),
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                                  minimumSize: const Size(0, 28),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              ),
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete, size: 20),
+                            onPressed: () => _confirmDeleteAssignment(assignment),
+                          ),
+                          isThreeLine: true,
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, size: 20),
-                          onPressed: () => _confirmDeleteAssignment(assignment),
-                        ),
-                      ],
-                    ),
-                  ),
-                ).toList(),
+                      );
+                    },
+                  );
+                }).toList(),
               );
             },
           ),

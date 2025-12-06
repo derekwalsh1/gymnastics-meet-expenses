@@ -10,6 +10,7 @@ import 'screens/events/events_list_screen.dart';
 import 'screens/events/create_event_wizard_screen.dart';
 import 'screens/events/event_detail_screen.dart';
 import 'screens/events/assign_judge_screen.dart';
+import 'screens/fees/manage_fees_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'services/database_service.dart';
 
@@ -132,6 +133,17 @@ final _router = GoRouter(
           eventId: eventId,
           floorId: floorId,
           sessionId: sessionId,
+        );
+      },
+    ),
+    GoRoute(
+      path: '/assignments/:assignmentId/fees',
+      builder: (context, state) {
+        final assignmentId = state.pathParameters['assignmentId']!;
+        final judgeName = state.uri.queryParameters['judgeName'] ?? 'Judge';
+        return ManageFeesScreen(
+          assignmentId: assignmentId,
+          judgeName: judgeName,
         );
       },
     ),
