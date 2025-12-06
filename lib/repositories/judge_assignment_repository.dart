@@ -1,0 +1,247 @@
+import 'package:uuid/uuid.dart';
+import '../models/judge_assignment.dart';
+import '../models/judge_with_level.dart';
+import '../services/database_service.dart';
+
+class JudgeAssignmentRepository {
+  final DatabaseService _dbService = DatabaseService.instance;
+  final _uuid = const Uuid();
+
+  // Create assignment with judge snapshot
+  Future<JudgeAssignment> createAssignment({
+    required String eventFloorId,
+    required JudgeWithLevels judge,
+    required String association,
+    String? role,
+    double? customHourlyRate,
+  }) async {
+    final db = await _dbService.database;
+    final now = DateTime.now();
+
+    // Get the judge's level for this association
+    final levels = judge.levelsFor(association);
+    if (levels.isEmpty) {
+      throw Exception('Judge does not have certification for $association');
+    }
+    final level = levels.first;
+
+    final assignment = JudgeAssignment(
+      id: _uuid.v4(),
+      eventFloorId: eventFloorId,
+      judgeId: judge.judge.id,
+      judgeFirstName: judge.judge.firstName,
+      judgeLastName: judge.judge.lastName,
+      judgeAssociation: association,
+      judgeLevel: level.level,
+      judgeContactInfo: judge.judge.contactInfo,
+      role: role,
+      hourlyRate: customHourlyRate ?? level.defaultHourlyRate,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    await db.insert('judge_assignments', assignment.toMap());
+    return assignment;
+  }
+
+  // Read
+  Future<JudgeAssignment?> getAssignmentById(String id) async {
+    final db = await _dbService.database;
+    final maps = await db.query(
+      'judge_assignments',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (maps.isEmpty) return null;
+    return JudgeAssignment.fromMap(maps.first);
+  }
+
+  Future<List<JudgeAssignment>> getAssignmentsByFloorId(String eventFloorId) async {
+    final db = await _dbService.database;
+    final maps = await db.query(
+      'judge_assignments',
+      where: 'eventFloorId = ?',
+      whereArgs: [eventFloorId],
+      orderBy: 'judgeLastName ASC, judgeFirstName ASC',
+    );
+
+    return maps.map((map) => JudgeAssignment.fromMap(map)).toList();
+  }
+
+  Future<List<JudgeAssignment>> getAssignmentsBySessionId(String eventSessionId) async {
+    final db = await _dbService.database;
+    final maps = await db.rawQuery('''
+      SELECT ja.* 
+      FROM judge_assignments ja
+      INNER JOIN event_floors ef ON ja.eventFloorId = ef.id
+      WHERE ef.eventSessionId = ?
+      ORDER BY ef.floorNumber ASC, ja.judgeLastName ASC, ja.judgeFirstName ASC
+    ''', [eventSessionId]);
+
+    return maps.map((map) => JudgeAssignment.fromMap(map)).toList();
+  }
+
+  Future<List<JudgeAssignment>> getAssignmentsByEventId(String eventId) async {
+    final db = await _dbService.database;
+    final maps = await db.rawQuery('''
+      SELECT ja.* 
+      FROM judge_assignments ja
+      INNER JOIN event_floors ef ON ja.eventFloorId = ef.id
+      INNER JOIN event_sessions es ON ef.eventSessionId = es.id
+      INNER JOIN event_days ed ON es.eventDayId = ed.id
+      WHERE ed.eventId = ?
+      ORDER BY ed.dayNumber ASC, es.sessionNumber ASC, ef.floorNumber ASC, 
+               ja.judgeLastName ASC, ja.judgeFirstName ASC
+    ''', [eventId]);
+
+    return maps.map((map) => JudgeAssignment.fromMap(map)).toList();
+  }
+
+  Future<List<JudgeAssignment>> getAssignmentsByJudgeId(String judgeId) async {
+    final db = await _dbService.database;
+    final maps = await db.query(
+      'judge_assignments',
+      where: 'judgeId = ?',
+      whereArgs: [judgeId],
+      orderBy: 'createdAt DESC',
+    );
+
+    return maps.map((map) => JudgeAssignment.fromMap(map)).toList();
+  }
+
+  // Update
+  Future<void> updateAssignment(JudgeAssignment assignment) async {
+    final db = await _dbService.database;
+    final updatedAssignment = assignment.copyWith(updatedAt: DateTime.now());
+
+    await db.update(
+      'judge_assignments',
+      updatedAssignment.toMap(),
+      where: 'id = ?',
+      whereArgs: [assignment.id],
+    );
+  }
+
+  // Delete
+  Future<void> deleteAssignment(String id) async {
+    final db = await _dbService.database;
+    await db.delete(
+      'judge_assignments',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // Conflict detection - check if judge is already assigned to another floor at the same time
+  Future<bool> hasConflict({
+    required String judgeId,
+    required String eventSessionId,
+    String? excludeAssignmentId,
+  }) async {
+    final db = await _dbService.database;
+    
+    // Get all floors for this session
+    final floorMaps = await db.query(
+      'event_floors',
+      where: 'eventSessionId = ?',
+      whereArgs: [eventSessionId],
+    );
+
+    if (floorMaps.isEmpty) return false;
+
+    final floorIds = floorMaps.map((m) => m['id'] as String).toList();
+
+    // Check if judge is assigned to any floor in this session
+    final whereClause = excludeAssignmentId != null
+        ? 'judgeId = ? AND eventFloorId IN (${floorIds.map((_) => '?').join(',')}) AND id != ?'
+        : 'judgeId = ? AND eventFloorId IN (${floorIds.map((_) => '?').join(',')})';
+
+    final whereArgs = excludeAssignmentId != null
+        ? [judgeId, ...floorIds, excludeAssignmentId]
+        : [judgeId, ...floorIds];
+
+    final conflictMaps = await db.query(
+      'judge_assignments',
+      where: whereClause,
+      whereArgs: whereArgs,
+    );
+
+    return conflictMaps.isNotEmpty;
+  }
+
+  // Get available judges for a session (not already assigned to another floor at same time)
+  Future<List<String>> getAvailableJudgeIds(String eventSessionId) async {
+    final db = await _dbService.database;
+    
+    // Get all judges
+    final allJudgeMaps = await db.query('judges', where: 'isArchived = 0');
+    final allJudgeIds = allJudgeMaps.map((m) => m['id'] as String).toSet();
+
+    // Get judges already assigned to this session
+    final assignedMaps = await db.rawQuery('''
+      SELECT DISTINCT ja.judgeId
+      FROM judge_assignments ja
+      INNER JOIN event_floors ef ON ja.eventFloorId = ef.id
+      WHERE ef.eventSessionId = ?
+    ''', [eventSessionId]);
+
+    final assignedJudgeIds = assignedMaps.map((m) => m['judgeId'] as String).toSet();
+
+    // Return available judges (all - assigned)
+    return allJudgeIds.difference(assignedJudgeIds).toList();
+  }
+
+  // Get judge assignments for a specific judge and event (for financial tracking)
+  Future<List<JudgeAssignment>> getJudgeEventAssignments({
+    required String judgeId,
+    required String eventId,
+  }) async {
+    final db = await _dbService.database;
+    final maps = await db.rawQuery('''
+      SELECT ja.* 
+      FROM judge_assignments ja
+      INNER JOIN event_floors ef ON ja.eventFloorId = ef.id
+      INNER JOIN event_sessions es ON ef.eventSessionId = es.id
+      INNER JOIN event_days ed ON es.eventDayId = ed.id
+      WHERE ja.judgeId = ? AND ed.eventId = ?
+      ORDER BY ed.dayNumber ASC, es.sessionNumber ASC, ef.floorNumber ASC
+    ''', [judgeId, eventId]);
+
+    return maps.map((map) => JudgeAssignment.fromMap(map)).toList();
+  }
+
+  // Helper methods
+  Future<int> getAssignmentCount(String eventFloorId) async {
+    final db = await _dbService.database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM judge_assignments WHERE eventFloorId = ?',
+      [eventFloorId],
+    );
+    return result.first['count'] as int;
+  }
+
+  Future<int> getSessionAssignmentCount(String eventSessionId) async {
+    final db = await _dbService.database;
+    final result = await db.rawQuery('''
+      SELECT COUNT(*) as count
+      FROM judge_assignments ja
+      INNER JOIN event_floors ef ON ja.eventFloorId = ef.id
+      WHERE ef.eventSessionId = ?
+    ''', [eventSessionId]);
+    return result.first['count'] as int;
+  }
+
+  Future<int> getEventAssignmentCount(String eventId) async {
+    final db = await _dbService.database;
+    final result = await db.rawQuery('''
+      SELECT COUNT(*) as count
+      FROM judge_assignments ja
+      INNER JOIN event_floors ef ON ja.eventFloorId = ef.id
+      INNER JOIN event_sessions es ON ef.eventSessionId = es.id
+      INNER JOIN event_days ed ON es.eventDayId = ed.id
+      WHERE ed.eventId = ?
+    ''', [eventId]);
+    return result.first['count'] as int;
+  }
+}

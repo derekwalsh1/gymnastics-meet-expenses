@@ -9,6 +9,7 @@ import 'screens/judges/add_edit_judge_level_screen.dart';
 import 'screens/events/events_list_screen.dart';
 import 'screens/events/create_event_wizard_screen.dart';
 import 'screens/events/event_detail_screen.dart';
+import 'screens/events/assign_judge_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'services/database_service.dart';
 
@@ -106,6 +107,19 @@ final _router = GoRouter(
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return EventDetailScreen(eventId: id);
+      },
+    ),
+    GoRoute(
+      path: '/events/:eventId/floors/:floorId/assign-judge',
+      builder: (context, state) {
+        final eventId = state.pathParameters['eventId']!;
+        final floorId = state.pathParameters['floorId']!;
+        final sessionId = state.uri.queryParameters['sessionId']!;
+        return AssignJudgeScreen(
+          eventId: eventId,
+          floorId: floorId,
+          sessionId: sessionId,
+        );
       },
     ),
     GoRoute(
