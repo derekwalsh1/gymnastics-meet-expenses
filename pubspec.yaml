@@ -1,0 +1,68 @@
+name: nawgj_expense_tracker
+description: A cross-platform expense management app for gymnastics meet managers
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_riverpod: ^2.4.9
+  
+  # Local Database
+  sqflite: ^2.3.0
+  path_provider: ^2.1.1
+  path: ^1.8.3
+  
+  # UI Components
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+  
+  # Navigation
+  go_router: ^12.1.3
+  
+  # File Handling & Import/Export
+  file_picker: ^6.1.1
+  share_plus: ^7.2.1
+  
+  # Image Handling (Receipts)
+  image_picker: ^1.0.4
+  
+  # PDF Generation
+  pdf: ^3.10.7
+  printing: ^5.11.1
+  
+  # CSV Generation
+  csv: ^5.1.1
+  
+  # Date/Time Utilities
+  intl: ^0.19.0
+  
+  # UUID Generation
+  uuid: ^4.2.2
+  
+  # JSON Serialization
+  json_annotation: ^4.8.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+  # Linting
+  flutter_lints: ^3.0.1
+  
+  # Code Generation
+  build_runner: ^2.4.7
+  json_serializable: ^6.7.1
+
+flutter:
+  uses-material-design: true
+  
+  # Uncomment to add assets
+  # assets:
+  #   - assets/images/
+  #   - assets/icons/
