@@ -453,7 +453,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             title: const Text('Archive Event'),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Archive event
+              _confirmArchiveEvent();
             },
           ),
           ListTile(
@@ -461,11 +461,168 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             title: const Text('Delete Event', style: TextStyle(color: Colors.red)),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Delete event
+              _confirmDeleteEvent();
             },
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmArchiveEvent() async {
+    final eventAsync = ref.read(eventProvider(widget.eventId));
+    final event = eventAsync.value;
+    
+    if (event == null) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Archive Event'),
+        content: Text('Archive "${event.name}"? You can unarchive it later.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Archive'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      try {
+        final repository = ref.read(eventRepositoryProvider);
+        await repository.archiveEvent(widget.eventId);
+        
+        // Invalidate providers to refresh data
+        ref.invalidate(filteredEventsProvider);
+        ref.invalidate(eventsProvider);
+        ref.invalidate(upcomingEventsProvider);
+        
+        if (mounted) {
+          context.go('/events');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Event archived successfully')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error archiving event: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _confirmDeleteEvent() async {
+    final eventAsync = ref.read(eventProvider(widget.eventId));
+    final event = eventAsync.value;
+    
+    if (event == null) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Event'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Permanently delete "${event.name}"?'),
+            const SizedBox(height: 8),
+            const Text(
+              'This will delete all associated data including:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            const Text('• Event days, sessions, and floors'),
+            const Text('• Judge assignments'),
+            const Text('• Fees and expenses'),
+            const SizedBox(height: 8),
+            const Text(
+              'This action cannot be undone!',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      try {
+        // Delete all related data
+        final dayRepo = EventDayRepository();
+        final sessionRepo = EventSessionRepository();
+        final floorRepo = EventFloorRepository();
+        final assignmentRepo = JudgeAssignmentRepository();
+        
+        // Get all days for this event
+        final days = await dayRepo.getEventDaysByEventId(widget.eventId);
+        
+        // Delete all sessions, floors, and assignments
+        for (final day in days) {
+          final sessions = await sessionRepo.getEventSessionsByDayId(day.id);
+          
+          for (final session in sessions) {
+            final floors = await floorRepo.getEventFloorsBySessionId(session.id);
+            
+            for (final floor in floors) {
+              // Delete assignments for this floor
+              final assignments = await assignmentRepo.getAssignmentsByFloorId(floor.id);
+              for (final assignment in assignments) {
+                await assignmentRepo.deleteAssignment(assignment.id);
+              }
+              
+              // Delete floor
+              await floorRepo.deleteEventFloor(floor.id);
+            }
+            
+            // Delete session
+            await sessionRepo.deleteEventSession(session.id);
+          }
+          
+          // Delete day
+          await dayRepo.deleteEventDay(day.id);
+        }
+        
+        // Finally, delete the event itself
+        final repository = ref.read(eventRepositoryProvider);
+        await repository.deleteEvent(widget.eventId);
+        
+        // Invalidate providers to refresh data
+        ref.invalidate(filteredEventsProvider);
+        ref.invalidate(eventsProvider);
+        ref.invalidate(upcomingEventsProvider);
+        
+        if (mounted) {
+          context.go('/events');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Event deleted successfully')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error deleting event: $e')),
+          );
+        }
+      }
+    }
   }
 }

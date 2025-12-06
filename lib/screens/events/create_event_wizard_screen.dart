@@ -90,12 +90,16 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
   Future<void> _createEvent() async {
     if (!_formKey.currentState!.validate()) return;
 
+    print('DEBUG: Starting event creation...');
+    
     try {
       final eventRepo = ref.read(eventRepositoryProvider);
       final dayRepo = EventDayRepository();
       final sessionRepo = EventSessionRepository();
       final floorRepo = EventFloorRepository();
 
+      print('DEBUG: Creating event with name: ${_nameController.text}');
+      
       // Create the event
       final event = await eventRepo.createEvent(
         name: _nameController.text,
@@ -112,6 +116,9 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
         associationId: _selectedAssociationId,
       );
 
+      print('DEBUG: Event created with ID: ${event.id}');
+      print('DEBUG: Creating $_numberOfDays days, $_sessionsPerDay sessions, $_floorsPerSession floors');
+
       // Create event structure based on template/customization
       final sessionTimes = _selectedTemplate?.sessionTimes ?? [];
       
@@ -122,6 +129,8 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
           dayNumber: dayNum,
           date: dayDate,
         );
+        
+        print('DEBUG: Created day $dayNum with ID: ${eventDay.id}');
 
         for (int sessionNum = 1; sessionNum <= _sessionsPerDay; sessionNum++) {
           final sessionTemplate = sessionNum <= sessionTimes.length
@@ -137,6 +146,8 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
             startTime: sessionTemplate?.startTime ?? const TimeOfDay(hour: 9, minute: 0),
             endTime: sessionTemplate?.endTime ?? const TimeOfDay(hour: 17, minute: 0),
           );
+          
+          print('DEBUG: Created session $sessionNum with ID: ${session.id}');
 
           for (int floorNum = 1; floorNum <= _floorsPerSession; floorNum++) {
             await floorRepo.createEventFloor(
@@ -144,21 +155,29 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
               floorNumber: floorNum,
               name: _floorsPerSession > 1 ? 'Floor $floorNum' : 'Main Floor',
             );
+            print('DEBUG: Created floor $floorNum');
           }
         }
       }
 
+      print('DEBUG: Event structure creation complete!');
+
       // Invalidate providers to refresh data
+      ref.invalidate(filteredEventsProvider);
       ref.invalidate(eventsProvider);
       ref.invalidate(upcomingEventsProvider);
+      
+      print('DEBUG: Providers invalidated');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Event created successfully!')),
         );
-        context.pop();
+        context.go('/events');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('DEBUG: Error creating event: $e');
+      print('DEBUG: Stack trace: $stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error creating event: $e')),
@@ -174,7 +193,7 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
         title: const Text('Create Event'),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => context.pop(),
+          onPressed: () => context.go('/events'),
         ),
       ),
       body: Column(
