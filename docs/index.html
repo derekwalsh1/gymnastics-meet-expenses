@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gymnastics Meet Expenses - Support</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #1ABC9C 0%, #3498DB 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .app-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #1ABC9C 0%, #3498DB 100%);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .app-icon-text {
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+        }
+        
+        h1 {
+            color: #2C3E50;
+            margin-bottom: 10px;
+        }
+        
+        .tagline {
+            color: #7F8C8D;
+            font-size: 18px;
+        }
+        
+        .section {
+            margin: 30px 0;
+        }
+        
+        h2 {
+            color: #2980B9;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ECF0F1;
+            padding-bottom: 10px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .feature {
+            padding: 15px;
+            background: #F8F9FA;
+            border-radius: 8px;
+            border-left: 4px solid #3498DB;
+        }
+        
+        .feature h3 {
+            color: #2C3E50;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .feature p {
+            color: #7F8C8D;
+            font-size: 14px;
+        }
+        
+        .contact {
+            background: #ECF0F1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .contact a {
+            color: #2980B9;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .contact a:hover {
+            text-decoration: underline;
+        }
+        
+        .faq {
+            margin-top: 20px;
+        }
+        
+        .faq-item {
+            margin-bottom: 20px;
+        }
+        
+        .faq-question {
+            font-weight: 600;
+            color: #2C3E50;
+            margin-bottom: 8px;
+        }
+        
+        .faq-answer {
+            color: #555;
+            padding-left: 15px;
+        }
+        
+        .download {
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .download-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #1ABC9C 0%, #3498DB 100%);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+            transition: transform 0.2s;
+        }
+        
+        .download-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ECF0F1;
+            color: #7F8C8D;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="app-icon">
+                <div class="app-icon-text">GJ</div>
+            </div>
+            <h1>Gymnastics Meet Expenses</h1>
+            <p class="tagline">Professional expense tracking for gymnastics meets</p>
+        </div>
+        
+        <div class="download">
+            <a href="#" class="download-button">Download on the App Store</a>
+            <p style="margin-top: 10px; color: #7F8C8D; font-size: 14px;">Coming soon to the App Store</p>
+        </div>
+        
+        <div class="section">
+            <h2>About</h2>
+            <p>Gymnastics Meet Expenses is a comprehensive expense tracking solution designed specifically for gymnastics meet managers, judges, and event coordinators. Streamline your expense management with professional invoicing, detailed reporting, and multi-event support.</p>
+        </div>
+        
+        <div class="section">
+            <h2>Features</h2>
+            <div class="features">
+                <div class="feature">
+                    <h3>📊 Expense Tracking</h3>
+                    <p>Track mileage, per diem, hotel, and miscellaneous costs with detailed categorization</p>
+                </div>
+                <div class="feature">
+                    <h3>📄 Professional Invoices</h3>
+                    <p>Generate detailed PDF invoices with itemized expenses and session details</p>
+                </div>
+                <div class="feature">
+                    <h3>📅 Multi-Event Support</h3>
+                    <p>Manage expenses across multiple events and gymnastics associations</p>
+                </div>
+                <div class="feature">
+                    <h3>👥 Judge Assignments</h3>
+                    <p>Track judge assignments for complex meet structures with sessions and rotations</p>
+                </div>
+                <div class="feature">
+                    <h3>📈 Detailed Reports</h3>
+                    <p>Export comprehensive expense reports and summaries as professional PDFs</p>
+                </div>
+                <div class="feature">
+                    <h3>🔒 Privacy First</h3>
+                    <p>All data stored locally on your device with optional iCloud backup</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq">
+                <div class="faq-item">
+                    <div class="faq-question">Q: Is my data secure?</div>
+                    <div class="faq-answer">A: Yes! All your data is stored locally on your device. We don't collect or store any of your financial information on external servers.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: Can I use this for multiple associations?</div>
+                    <div class="faq-answer">A: Absolutely! The app supports unlimited associations, and you can easily switch between them.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: Does it work on both iPhone and iPad?</div>
+                    <div class="faq-answer">A: Yes! The app is optimized for both iPhone and iPad, supporting portrait and landscape orientations.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: Can I export my invoices and reports?</div>
+                    <div class="faq-answer">A: Yes! You can generate professional PDF invoices and reports, then share them via email or save to Files.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: Do I need an account to use the app?</div>
+                    <div class="faq-answer">A: No account required! The app works completely offline with all data stored on your device.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Support</h2>
+            <div class="contact">
+                <p><strong>Need help?</strong></p>
+                <p style="margin-top: 10px;">For questions, bug reports, or feature requests, please contact us at:</p>
+                <p style="margin-top: 10px;">
+                    <a href="mailto:support@gymnasticsmeetexpenses.app">support@gymnasticsmeetexpenses.app</a>
+                </p>
+                <p style="margin-top: 15px;">
+                    <strong>Source Code:</strong> <a href="https://github.com/derekwalsh1/gymnastics-meet-expenses">GitHub Repository</a>
+                </p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Privacy Policy</h2>
+            <p>Gymnastics Meet Expenses respects your privacy. The app does not collect, transmit, or share any personal or financial data. All information you enter is stored locally on your device. If you choose to enable iCloud backup, your data is synced securely through your personal iCloud account, which is encrypted and controlled by Apple.</p>
+            <p style="margin-top: 10px;">We do not:</p>
+            <ul style="margin-left: 20px; margin-top: 10px; color: #555;">
+                <li>Collect personal information</li>
+                <li>Track your usage</li>
+                <li>Share data with third parties</li>
+                <li>Display advertisements</li>
+                <li>Require account creation</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 Gymnastics Meet Expenses. All rights reserved.</p>
+            <p style="margin-top: 5px;">Version 1.0.0</p>
+        </div>
+    </div>
+</body>
+</html>

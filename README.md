@@ -1,6 +1,10 @@
-# Gymnastics Judging Expense Tracker
+# Gymnastics Meet Expenses
 
-A cross-platform mobile application for gymnastics meet managers to track and manage expenses for gymnastics meets.
+A comprehensive expense tracking solution designed specifically for gymnastics meet managers, judges, and event coordinators.
+
+## Download
+
+Coming soon to the [App Store](https://apps.apple.com)
 
 ## Project Structure
 
@@ -85,23 +89,70 @@ See [PROJECT_PLAN.md](PROJECT_PLAN.md) for the complete project plan.
 
 ## Features
 
-- **Local-First Architecture**: All data stored locally, no internet required
-- **Judge Database**: Manage judges with hourly rates and assignments
-- **Event Management**: Create multi-day events with sessions and floors
-- **Expense Tracking**: Comprehensive expense categories including mileage, meals, lodging, etc.
-- **Auto-Calculations**: Automatic fee calculation based on hourly rates and session duration
-- **Reports**: Generate professional PDF reports for reimbursement
-- **Import/Export**: Share judge lists between users
+### 📊 Comprehensive Expense Tracking
+- Track all meet-related expenses with detailed categorization
+- Record mileage, per diem, hotel, and miscellaneous costs
+- Attach receipts and notes to individual expenses
+- Monitor spending across multiple events and associations
 
-## Tech Stack
+### 📄 Professional Invoicing
+- Generate detailed PDF invoices with itemized expenses
+- Include session details, dates, times, and floor assignments
+- Automatic calculations with subtotals and grand totals
+- Share invoices via email or save to Files
 
-- **Framework**: Flutter (Dart)
+### 📅 Multi-Event Management
+- Organize expenses by event, association, and date
+- Create custom event structures with days, sessions, and floors
+- Track expenses across unlimited events
+
+### 👥 Judge Assignment Tools
+- Manage judge assignments for complex meet structures
+- Support for multiple sessions, rotations, and apparatus
+- Visual event structure overview
+
+### 📈 Powerful Reporting
+- Combined event reports with full expense breakdowns
+- Judge assignment summaries by floor and session
+- Export all reports as professional PDFs
+
+### 🔒 Privacy & Security
+- All data stored locally on your device
+- No account required
+- Your financial information stays private
+- Optional iCloud backup
+
+## Platform Support
+
+- ✅ iOS 13.0+
+- ✅ iPad & iPhone optimized
+- ✅ Portrait and landscape orientations
+
+## Technology Stack
+
+- **Framework**: Flutter 3.38.4
 - **State Management**: Riverpod
-- **Local Database**: SQLite (sqflite)
-- **Navigation**: GoRouter
+- **Local Database**: Hive
+- **Routing**: Go Router
 - **PDF Generation**: pdf package
-- **File Handling**: file_picker, share_plus
+- **Charts**: FL Chart
+
+## Support
+
+For questions, bug reports, or feature requests:
+- 📧 Email: support@gymnasticsmeetexpenses.app
+- 🌐 Website: [GitHub Pages](https://derekwalsh1.github.io/gymnastics-meet-expenses/)
+
+## Privacy
+
+Gymnastics Meet Expenses respects your privacy:
+- No data collection or tracking
+- All data stored locally on your device
+- No account required
+- No third-party analytics or ads
 
 ## License
+
+Copyright © 2025 Derek Walsh. All rights reserved.
 
 Private project - All rights reserved
