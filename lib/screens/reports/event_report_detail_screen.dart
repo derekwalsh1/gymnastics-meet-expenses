@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
@@ -414,9 +415,11 @@ class EventReportDetailScreen extends ConsumerWidget {
       final pdfService = PdfService();
       final file = await pdfService.generateEventReportPdf(report);
 
+      final box = context.findRenderObject() as RenderBox?;
       await Share.shareXFiles(
         [XFile(file.path)],
         subject: 'Event Financial Report - ${report.eventName}',
+        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
       );
     } catch (e) {
       if (context.mounted) {
@@ -436,9 +439,11 @@ class EventReportDetailScreen extends ConsumerWidget {
       final csvService = CsvService();
       final files = await csvService.generateEventReportCsvs(report);
 
+      final box = context.findRenderObject() as RenderBox?;
       await Share.shareXFiles(
         files.map((f) => XFile(f.path)).toList(),
         subject: 'Event Financial Report - ${report.eventName}',
+        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
       );
     } catch (e) {
       if (context.mounted) {
