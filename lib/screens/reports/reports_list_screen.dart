@@ -219,6 +219,8 @@ class _ReportsListScreenState extends ConsumerState<ReportsListScreen> {
         return Colors.green;
       case EventStatus.completed:
         return Colors.grey;
+      case EventStatus.archived:
+        return Colors.blueGrey;
     }
   }
 
@@ -230,6 +232,8 @@ class _ReportsListScreenState extends ConsumerState<ReportsListScreen> {
         return 'ONGOING';
       case EventStatus.completed:
         return 'COMPLETED';
+      case EventStatus.archived:
+        return 'ARCHIVED';
     }
   }
 }
