@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../models/event_report.dart';
 import '../../providers/report_provider.dart';
+import '../../services/pdf_service.dart';
+import '../../services/csv_service.dart';
+import '../../widgets/charts/expense_pie_chart.dart';
+import '../../widgets/charts/judge_earnings_bar_chart.dart';
 
 class EventReportDetailScreen extends ConsumerWidget {
   final String eventId;
@@ -19,23 +24,22 @@ class EventReportDetailScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
-            onPressed: () {
-              // TODO: Implement share functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Share functionality coming soon')),
-              );
+            onPressed: () async {
+              final report = reportAsync.value;
+              if (report != null) {
+                await _handleShare(context, report);
+              }
             },
           ),
           PopupMenuButton<String>(
-            onSelected: (value) {
+            onSelected: (value) async {
+              final report = reportAsync.value;
+              if (report == null) return;
+              
               if (value == 'pdf') {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('PDF export coming soon')),
-                );
+                await _handlePdfExport(context, report);
               } else if (value == 'csv') {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('CSV export coming soon')),
-                );
+                await _handleCsvExport(context, report);
               }
             },
             itemBuilder: (context) => [
@@ -150,6 +154,52 @@ class EventReportDetailScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           ...report.judgeBreakdowns.values.map((summary) => _buildJudgeCard(summary)),
         ],
+        const SizedBox(height: 24),
+
+        // Visual Analytics
+        const Text(
+          'Visual Analytics',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+
+        // Judge Earnings Comparison
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Judge Earnings Comparison',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                JudgeEarningsBarChart(report: report),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Expense Distribution
+        if (report.expensesByCategory.isNotEmpty)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Expense Distribution',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  ExpensePieChart(report: report),
+                ],
+              ),
+            ),
+          ),
         const SizedBox(height: 16),
 
         // Expense Breakdown
@@ -351,7 +401,81 @@ class EventReportDetailScreen extends ConsumerWidget {
       case 'judgeFees':
         return 'Judge Fees';
       default:
-        return categoryName;
+        return category;
+    }
+  }
+
+  Future<void> _handlePdfExport(BuildContext context, EventReport report) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Generating PDF...')),
+      );
+
+      final pdfService = PdfService();
+      final file = await pdfService.generateEventReportPdf(report);
+
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        subject: 'Event Financial Report - ${report.eventName}',
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error generating PDF: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleCsvExport(BuildContext context, EventReport report) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Generating CSV files...')),
+      );
+
+      final csvService = CsvService();
+      final files = await csvService.generateEventReportCsvs(report);
+
+      await Share.shareXFiles(
+        files.map((f) => XFile(f.path)).toList(),
+        subject: 'Event Financial Report - ${report.eventName}',
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error generating CSV: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleShare(BuildContext context, EventReport report) async {
+    final action = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Share Report'),
+        content: const Text('Choose export format:'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'pdf'),
+            child: const Text('PDF'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'csv'),
+            child: const Text('CSV'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (action == 'pdf') {
+      await _handlePdfExport(context, report);
+    } else if (action == 'csv') {
+      await _handleCsvExport(context, report);
     }
   }
 }
