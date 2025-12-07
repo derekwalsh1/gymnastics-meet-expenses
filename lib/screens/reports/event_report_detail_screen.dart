@@ -125,12 +125,12 @@ class EventReportDetailScreen extends ConsumerWidget {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                _buildSummaryRow('Fees (1099 Amount)', report.totalFees, Colors.green),
+                _buildSummaryRow('Total Fees (for 1099s)', report.totalFees, Colors.green),
                 const Divider(),
-                _buildSummaryRow('Expenses (Reimbursable)', report.totalExpenses, Colors.orange),
+                _buildSummaryRow('Total Expenses (Reimbursable)', report.totalExpenses, Colors.orange),
                 const Divider(),
                 _buildSummaryRow(
-                  'Total Owed (Check Amount)',
+                  'Total Payout (All Judges)',
                   report.totalOwed,
                   Colors.blue,
                   isLarge: true,
@@ -232,7 +232,7 @@ class EventReportDetailScreen extends ConsumerWidget {
         ),
         subtitle: Row(
           children: [
-            Text('Total Owed: '),
+            Text('Check Amount: '),
             Text(
               '\$${summary.totalOwed.toStringAsFixed(2)}',
               style: const TextStyle(
@@ -281,7 +281,7 @@ class EventReportDetailScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Total Owed:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const Text('Check Amount:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     Text(
                       '\$${summary.totalOwed.toStringAsFixed(2)}',
                       style: const TextStyle(

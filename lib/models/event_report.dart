@@ -23,10 +23,10 @@ class EventReport {
   // Financial data
   final Map<String, JudgeFinancialSummary> judgeBreakdowns;
   final Map<String, double> expensesByCategory;
-  final double totalFees; // Total for all 1099s
-  final double totalExpenses; // Total reimbursable expenses
+  final double totalFees; // Sum of all judge fees (for 1099 reporting)
+  final double totalExpenses; // Sum of all reimbursable expenses
   
-  // Total amount owed to all judges (for budgeting)
+  // Total payout across all judges (sum of all individual checks)
   double get totalOwed => totalFees + totalExpenses;
   
   // Metadata
@@ -99,15 +99,15 @@ class EventReport {
 class JudgeFinancialSummary {
   final String judgeId;
   final String judgeName;
-  final double totalFees; // Amount for 1099 (taxable income)
-  final double totalExpenses; // Reimbursable expenses (not taxable)
+  final double totalFees; // Judging fees - amount for 1099 (taxable income)
+  final double totalExpenses; // Reimbursable expenses (not taxable, not on 1099)
   final Map<String, double> feesBySession;
   final Map<String, double> expensesByCategory;
 
-  // Total amount owed to judge (for check/payment)
+  // Check amount - what to pay this specific judge (fees + expenses)
   double get totalOwed => totalFees + totalExpenses;
   
-  // Amount for 1099 reporting (fees only, taxable)
+  // 1099 amount - taxable income for this judge (fees only)
   double get amount1099 => totalFees;
 
   JudgeFinancialSummary({
