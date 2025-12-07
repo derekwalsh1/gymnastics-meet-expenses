@@ -75,7 +75,6 @@ class ReportRepository {
           judgeName: assignment.judgeFullName,
           totalFees: totalFees,
           totalExpenses: totalExpenses,
-          netTotal: totalFees - totalExpenses,
           feesBySession: feesBySession,
           expensesByCategory: expensesByCategory,
         );
@@ -111,7 +110,6 @@ class ReportRepository {
       expensesByCategory: expensesByCategory,
       totalFees: totalFees,
       totalExpenses: totalExpenses,
-      netTotal: totalFees - totalExpenses,
     );
   }
 
@@ -189,7 +187,6 @@ class ReportRepository {
         judgeName: judgeName,
         totalFees: totalFees,
         totalExpenses: totalExpenses,
-        netTotal: totalFees - totalExpenses,
         feesBySession: feesBySession,
         expensesByCategory: expensesByCategory,
       ),
@@ -207,7 +204,6 @@ class ReportRepository {
       expensesByCategory: expensesByCategory,
       totalFees: totalFees,
       totalExpenses: totalExpenses,
-      netTotal: totalFees - totalExpenses,
     );
   }
 
@@ -247,7 +243,6 @@ class ReportRepository {
       endDate: event.endDate,
       totalFees: totalFees,
       totalExpenses: totalExpenses,
-      netProfit: totalFees - totalExpenses,
       numberOfJudges: uniqueJudges.length,
       expenseBreakdown: expenseBreakdown,
     );
@@ -295,7 +290,6 @@ class ReportRepository {
       judgeName: judgeAssignments.first.judgeFullName,
       totalFees: totalFees,
       totalExpenses: totalExpenses,
-      netTotal: totalFees - totalExpenses,
       feesBySession: feesBySession,
       expensesByCategory: expensesByCategory,
     );

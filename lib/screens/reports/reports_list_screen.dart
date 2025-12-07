@@ -139,23 +139,23 @@ class _ReportsListScreenState extends ConsumerState<ReportsListScreen> {
                       children: [
                         Expanded(
                           child: _buildSummaryItem(
-                            'Total Fees',
+                            '1099 Amount',
                             '\$${summary.totalFees.toStringAsFixed(2)}',
                             Colors.green,
                           ),
                         ),
                         Expanded(
                           child: _buildSummaryItem(
-                            'Total Expenses',
+                            'Expenses',
                             '\$${summary.totalExpenses.toStringAsFixed(2)}',
                             Colors.orange,
                           ),
                         ),
                         Expanded(
                           child: _buildSummaryItem(
-                            'Net',
-                            '\$${summary.netProfit.toStringAsFixed(2)}',
-                            summary.netProfit >= 0 ? Colors.blue : Colors.red,
+                            'Total Owed',
+                            '\$${summary.totalOwed.toStringAsFixed(2)}',
+                            Colors.blue,
                           ),
                         ),
                       ],

@@ -23,9 +23,11 @@ class EventReport {
   // Financial data
   final Map<String, JudgeFinancialSummary> judgeBreakdowns;
   final Map<String, double> expensesByCategory;
-  final double totalFees;
-  final double totalExpenses;
-  final double netTotal;
+  final double totalFees; // Total for all 1099s
+  final double totalExpenses; // Total reimbursable expenses
+  
+  // Total amount owed to all judges (for budgeting)
+  double get totalOwed => totalFees + totalExpenses;
   
   // Metadata
   final String? notes;
@@ -44,14 +46,13 @@ class EventReport {
     required this.expensesByCategory,
     required this.totalFees,
     required this.totalExpenses,
-    required this.netTotal,
     this.notes,
   });
 
-  double getNetForJudge(String judgeId) {
+  double getTotalOwedForJudge(String judgeId) {
     final summary = judgeBreakdowns[judgeId];
     if (summary == null) return 0.0;
-    return summary.totalFees - summary.totalExpenses;
+    return summary.totalOwed;
   }
 
   factory EventReport.fromJson(Map<String, dynamic> json) =>
@@ -73,7 +74,6 @@ class EventReport {
     Map<String, double>? expensesByCategory,
     double? totalFees,
     double? totalExpenses,
-    double? netTotal,
     String? notes,
   }) {
     return EventReport(
@@ -90,7 +90,6 @@ class EventReport {
       expensesByCategory: expensesByCategory ?? this.expensesByCategory,
       totalFees: totalFees ?? this.totalFees,
       totalExpenses: totalExpenses ?? this.totalExpenses,
-      netTotal: netTotal ?? this.netTotal,
       notes: notes ?? this.notes,
     );
   }
@@ -100,18 +99,22 @@ class EventReport {
 class JudgeFinancialSummary {
   final String judgeId;
   final String judgeName;
-  final double totalFees;
-  final double totalExpenses;
-  final double netTotal;
+  final double totalFees; // Amount for 1099 (taxable income)
+  final double totalExpenses; // Reimbursable expenses (not taxable)
   final Map<String, double> feesBySession;
   final Map<String, double> expensesByCategory;
+
+  // Total amount owed to judge (for check/payment)
+  double get totalOwed => totalFees + totalExpenses;
+  
+  // Amount for 1099 reporting (fees only, taxable)
+  double get amount1099 => totalFees;
 
   JudgeFinancialSummary({
     required this.judgeId,
     required this.judgeName,
     required this.totalFees,
     required this.totalExpenses,
-    required this.netTotal,
     required this.feesBySession,
     required this.expensesByCategory,
   });
@@ -128,11 +131,13 @@ class FinancialSummary {
   final String eventName;
   final DateTime startDate;
   final DateTime endDate;
-  final double totalFees;
-  final double totalExpenses;
-  final double netProfit;
+  final double totalFees; // Total for 1099s
+  final double totalExpenses; // Total reimbursable expenses
   final int numberOfJudges;
   final Map<String, double> expenseBreakdown;
+  
+  // Total amount owed to all judges (fees + expenses)
+  double get totalOwed => totalFees + totalExpenses;
 
   FinancialSummary({
     required this.eventId,
@@ -141,7 +146,6 @@ class FinancialSummary {
     required this.endDate,
     required this.totalFees,
     required this.totalExpenses,
-    required this.netProfit,
     required this.numberOfJudges,
     required this.expenseBreakdown,
   });
