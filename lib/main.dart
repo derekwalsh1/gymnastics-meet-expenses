@@ -16,9 +16,8 @@ import 'screens/fees/manage_fees_screen.dart';
 import 'screens/expenses/expense_list_screen.dart';
 import 'screens/expenses/add_edit_expense_screen.dart';
 import 'screens/expenses/expense_detail_screen.dart';
-import 'screens/settings/settings_screen.dart';
-import 'services/database_service.dart';
-import 'screens/expenses/expense_detail_screen.dart';
+import 'screens/reports/reports_list_screen.dart';
+import 'screens/reports/event_report_detail_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'services/database_service.dart';
 
@@ -215,6 +214,18 @@ final _router = GoRouter(
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return AddEditExpenseScreen(expenseId: id);
+      },
+    ),
+    // Reports
+    GoRoute(
+      path: '/reports',
+      builder: (context, state) => const ReportsListScreen(),
+    ),
+    GoRoute(
+      path: '/reports/event/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return EventReportDetailScreen(eventId: id);
       },
     ),
   ],

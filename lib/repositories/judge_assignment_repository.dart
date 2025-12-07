@@ -284,4 +284,25 @@ class JudgeAssignmentRepository {
     ''', [eventId]);
     return result.first['count'] as int;
   }
+
+  // Helper methods to get related entities
+  Future<dynamic> getEventFloorById(String floorId) async {
+    return await EventFloorRepository().getEventFloorById(floorId);
+  }
+
+  Future<dynamic> getEventSessionById(String sessionId) async {
+    return await EventSessionRepository().getEventSessionById(sessionId);
+  }
+
+  Future<dynamic> getEventDayById(String dayId) async {
+    final db = await _dbService.database;
+    final maps = await db.query(
+      'event_days',
+      where: 'id = ?',
+      whereArgs: [dayId],
+    );
+    if (maps.isEmpty) return null;
+    // Return raw map since we don't have EventDay import here
+    return maps.first;
+  }
 }

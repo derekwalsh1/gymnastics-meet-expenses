@@ -59,6 +59,18 @@ class HomeScreen extends StatelessWidget {
                     onTap: () => context.push('/events'),
                   ),
                   _QuickActionCard(
+                    icon: Icons.assessment,
+                    title: 'Reports',
+                    subtitle: 'Financial reports',
+                    onTap: () => context.push('/reports'),
+                  ),
+                  _QuickActionCard(
+                    icon: Icons.receipt_long,
+                    title: 'Expenses',
+                    subtitle: 'Track expenses',
+                    onTap: () => context.push('/expenses'),
+                  ),
+                  _QuickActionCard(
                     icon: Icons.settings,
                     title: 'Settings',
                     subtitle: 'App preferences',
