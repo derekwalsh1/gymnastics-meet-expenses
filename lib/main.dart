@@ -3,15 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'screens/home_screen.dart';
 import 'screens/judges/judges_list_screen.dart';
+import 'screens/judges/judge_import_export_screen.dart';
+import 'screens/judges/judge_level_import_export_screen.dart';
 import 'screens/judges/associations_screen.dart';
 import 'screens/judges/judge_levels_screen.dart';
 import 'screens/judges/add_edit_judge_level_screen.dart';
 import 'screens/events/events_list_screen.dart';
 import 'screens/events/create_event_wizard_screen.dart';
 import 'screens/events/event_detail_screen.dart';
+import 'screens/events/event_structure_screen.dart';
+import 'screens/events/event_day_detail_screen.dart';
+import 'screens/events/event_session_detail_screen.dart';
+import 'screens/events/event_expenses_screen.dart';
 import 'screens/events/edit_event_screen.dart';
 import 'screens/events/assign_judge_screen.dart';
 import 'screens/events/edit_assignment_screen.dart';
+import 'screens/events/add_event_day_screen.dart';
+import 'screens/events/add_event_session_screen.dart';
+import 'screens/events/add_event_floor_screen.dart';
 import 'screens/fees/manage_fees_screen.dart';
 import 'screens/expenses/expense_list_screen.dart';
 import 'screens/expenses/add_edit_expense_screen.dart';
@@ -40,7 +49,7 @@ class NAWGJExpenseTrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'NAWGJ Expense Tracker',
+      title: 'Gymnastics Judging Expense Tracker',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -74,8 +83,16 @@ final _router = GoRouter(
       builder: (context, state) => const JudgesListScreen(),
     ),
     GoRoute(
+      path: '/judges/import-export',
+      builder: (context, state) => const JudgeImportExportScreen(),
+    ),
+    GoRoute(
       path: '/associations',
       builder: (context, state) => const AssociationsScreen(),
+    ),
+    GoRoute(
+      path: '/judge-levels/import-export',
+      builder: (context, state) => const JudgeLevelImportExportScreen(),
     ),
     GoRoute(
       path: '/judge-levels/:association',
@@ -135,6 +152,64 @@ final _router = GoRouter(
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return EditEventScreen(eventId: id);
+      },
+    ),
+    GoRoute(
+      path: '/events/:eventId/structure',
+      builder: (context, state) {
+        final eventId = state.pathParameters['eventId']!;
+        return EventStructureScreen(eventId: eventId);
+      },
+    ),
+    GoRoute(
+      path: '/events/:eventId/add-day',
+      builder: (context, state) {
+        final eventId = state.pathParameters['eventId']!;
+        return AddEventDayScreen(eventId: eventId);
+      },
+    ),
+    GoRoute(
+      path: '/events/:eventId/days/:dayId/add-session',
+      builder: (context, state) {
+        final eventId = state.pathParameters['eventId']!;
+        final dayId = state.pathParameters['dayId']!;
+        return AddEventSessionScreen(eventId: eventId, dayId: dayId);
+      },
+    ),
+    GoRoute(
+      path: '/events/:eventId/sessions/:sessionId/add-floor',
+      builder: (context, state) {
+        final eventId = state.pathParameters['eventId']!;
+        final sessionId = state.pathParameters['sessionId']!;
+        return AddEventFloorScreen(eventId: eventId, sessionId: sessionId);
+      },
+    ),
+    GoRoute(
+      path: '/events/:eventId/expenses',
+      builder: (context, state) {
+        final eventId = state.pathParameters['eventId']!;
+        return EventExpensesScreen(eventId: eventId);
+      },
+    ),
+    GoRoute(
+      path: '/events/:eventId/days/:dayId',
+      builder: (context, state) {
+        final eventId = state.pathParameters['eventId']!;
+        final dayId = state.pathParameters['dayId']!;
+        return EventDayDetailScreen(eventId: eventId, dayId: dayId);
+      },
+    ),
+    GoRoute(
+      path: '/events/:eventId/days/:dayId/sessions/:sessionId',
+      builder: (context, state) {
+        final eventId = state.pathParameters['eventId']!;
+        final dayId = state.pathParameters['dayId']!;
+        final sessionId = state.pathParameters['sessionId']!;
+        return EventSessionDetailScreen(
+          eventId: eventId,
+          dayId: dayId,
+          sessionId: sessionId,
+        );
       },
     ),
     GoRoute(

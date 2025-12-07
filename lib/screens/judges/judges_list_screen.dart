@@ -70,11 +70,9 @@ class _JudgesListScreenState extends ConsumerState<JudgesListScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.import_export),
+            tooltip: 'Import/Export Judges',
             onPressed: () {
-              // TODO: Import/Export functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Import/Export - Coming Soon')),
-              );
+              context.push('/judges/import-export');
             },
           ),
         ],
@@ -305,9 +303,14 @@ class _JudgesListScreenState extends ConsumerState<JudgesListScreen> {
                 ref.invalidate(judgesWithLevelsProvider);
                 ref.invalidate(filteredJudgesWithLevelsProvider);
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${judge.fullName} deleted')),
-                  );
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      SnackBar(
+                        content: Text('${judge.fullName} deleted'),
+                        duration: const Duration(milliseconds: 500),
+                      ),
+                    );
                 }
               } catch (e) {
                 if (context.mounted) {

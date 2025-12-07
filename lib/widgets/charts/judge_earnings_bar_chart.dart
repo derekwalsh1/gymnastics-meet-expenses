@@ -29,111 +29,153 @@ class _JudgeEarningsBarChartState extends State<JudgeEarningsBarChart> {
     }
 
     final judges = widget.report.judgeBreakdowns.values.toList();
+    final judgeCount = judges.length;
+    
+    // Make chart scrollable horizontally when there are many judges
+    final shouldScroll = judgeCount > 8;
+    final chartWidth = shouldScroll ? judgeCount * 60.0 : null;
 
     return Column(
       children: [
-        AspectRatio(
-          aspectRatio: 1.5,
-          child: BarChart(
-            BarChartData(
-              alignment: BarChartAlignment.spaceAround,
-              maxY: _getMaxY(judges),
-              barTouchData: BarTouchData(
-                touchCallback: (FlTouchEvent event, barTouchResponse) {
-                  setState(() {
-                    if (!event.isInterestedForInteractions ||
-                        barTouchResponse == null ||
-                        barTouchResponse.spot == null) {
-                      touchedGroupIndex = -1;
-                      return;
-                    }
-                    touchedGroupIndex =
-                        barTouchResponse.spot!.touchedBarGroupIndex;
-                  });
-                },
-                touchTooltipData: BarTouchTooltipData(
-                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                    final judge = judges[groupIndex];
-                    String label;
-                    switch (rodIndex) {
-                      case 0:
-                        label = 'Fees: \$${judge.totalFees.toStringAsFixed(2)}';
-                        break;
-                      case 1:
-                        label = 'Expenses: \$${judge.totalExpenses.toStringAsFixed(2)}';
-                        break;
-                      case 2:
-                        label = 'Check: \$${judge.totalOwed.toStringAsFixed(2)}';
-                        break;
-                      default:
-                        label = '';
-                    }
-                    return BarTooltipItem(
-                      label,
-                      const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    );
-                  },
-                ),
+        if (shouldScroll) ...[
+          Row(
+            children: [
+              Icon(Icons.swipe, size: 16, color: Colors.grey[600]),
+              const SizedBox(width: 4),
+              Text(
+                'Swipe to see all judges',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600], fontStyle: FontStyle.italic),
               ),
-              titlesData: FlTitlesData(
-                show: true,
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    getTitlesWidget: (value, meta) {
-                      final index = value.toInt();
-                      if (index >= 0 && index < judges.length) {
-                        final judge = judges[index];
-                        // Show first name or first 8 characters
-                        final name = judge.judgeName.split(' ').first;
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            name.length > 8 ? '${name.substring(0, 8)}...' : name,
-                            style: const TextStyle(fontSize: 10),
-                          ),
-                        );
-                      }
-                      return const Text('');
-                    },
-                    reservedSize: 30,
-                  ),
-                ),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    getTitlesWidget: (value, meta) {
-                      return Text(
-                        '\$${value.toInt()}',
-                        style: const TextStyle(fontSize: 10),
-                      );
-                    },
-                    reservedSize: 40,
-                  ),
-                ),
-                topTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                rightTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-              ),
-              borderData: FlBorderData(show: false),
-              barGroups: _getBarGroups(judges),
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: false,
-                horizontalInterval: _getMaxY(judges) / 5,
+            ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 300,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: chartWidth,
+                height: 300,
+                child: _buildChart(judges),
               ),
             ),
           ),
-        ),
+        ] else
+          AspectRatio(
+            aspectRatio: 1.5,
+            child: _buildChart(judges),
+          ),
         const SizedBox(height: 16),
         _buildLegend(),
       ],
+    );
+  }
+
+  Widget _buildChart(List<JudgeFinancialSummary> judges) {
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: _getMaxY(judges),
+        barTouchData: BarTouchData(
+          touchCallback: (FlTouchEvent event, barTouchResponse) {
+            setState(() {
+              if (!event.isInterestedForInteractions ||
+                  barTouchResponse == null ||
+                  barTouchResponse.spot == null) {
+                touchedGroupIndex = -1;
+                return;
+              }
+              touchedGroupIndex =
+                  barTouchResponse.spot!.touchedBarGroupIndex;
+            });
+          },
+          touchTooltipData: BarTouchTooltipData(
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              final judge = judges[groupIndex];
+              String label;
+              switch (rodIndex) {
+                case 0:
+                  label = 'Fees: \$${judge.totalFees.toStringAsFixed(2)}';
+                  break;
+                case 1:
+                  label = 'Expenses: \$${judge.totalExpenses.toStringAsFixed(2)}';
+                  break;
+                case 2:
+                  label = 'Check: \$${judge.totalOwed.toStringAsFixed(2)}';
+                  break;
+                default:
+                  label = '';
+              }
+              return BarTooltipItem(
+                label,
+                const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            },
+          ),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                final index = value.toInt();
+                if (index >= 0 && index < judges.length) {
+                  final judge = judges[index];
+                  // Show first name only for many judges, full name for few
+                  final name = judges.length > 8 
+                      ? judge.judgeName.split(' ').first
+                      : judge.judgeName;
+                  final displayName = name.length > 10 ? '${name.substring(0, 10)}...' : name;
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Transform.rotate(
+                      angle: judges.length > 12 ? -0.5 : 0,
+                      child: Text(
+                        displayName,
+                        style: TextStyle(
+                          fontSize: judges.length > 15 ? 8 : 10,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                }
+                return const Text('');
+              },
+              reservedSize: judges.length > 12 ? 40 : 30,
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                return Text(
+                  '\$${value.toInt()}',
+                  style: const TextStyle(fontSize: 10),
+                );
+              },
+              reservedSize: 40,
+            ),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        barGroups: _getBarGroups(judges),
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: _getMaxY(judges) / 5,
+        ),
+      ),
     );
   }
 

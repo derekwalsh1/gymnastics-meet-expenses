@@ -4,34 +4,58 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../models/event_report.dart';
+import '../../models/event.dart';
 import '../../providers/report_provider.dart';
+import '../../providers/event_provider.dart';
 import '../../services/pdf_service.dart';
 import '../../services/csv_service.dart';
+import '../../repositories/judge_fee_repository.dart';
+import '../../repositories/expense_repository.dart';
+import '../../repositories/judge_assignment_repository.dart';
+import '../../repositories/event_day_repository.dart';
+import '../../repositories/event_session_repository.dart';
+import '../../repositories/event_floor_repository.dart';
 import '../../widgets/charts/expense_pie_chart.dart';
 import '../../widgets/charts/judge_earnings_bar_chart.dart';
 
-class EventReportDetailScreen extends ConsumerWidget {
+class EventReportDetailScreen extends ConsumerStatefulWidget {
   final String eventId;
 
   const EventReportDetailScreen({super.key, required this.eventId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final reportAsync = ref.watch(eventReportProvider(eventId));
+  ConsumerState<EventReportDetailScreen> createState() => _EventReportDetailScreenState();
+}
+
+class _EventReportDetailScreenState extends ConsumerState<EventReportDetailScreen> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Refresh the report when the app resumes (e.g., after navigating back)
+      ref.invalidate(eventReportProvider(widget.eventId));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final reportAsync = ref.watch(eventReportProvider(widget.eventId));
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Event Financial Report'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () async {
-              final report = reportAsync.value;
-              if (report != null) {
-                await _handleShare(context, report);
-              }
-            },
-          ),
           PopupMenuButton<String>(
             onSelected: (value) async {
               final report = reportAsync.value;
@@ -41,6 +65,8 @@ class EventReportDetailScreen extends ConsumerWidget {
                 await _handlePdfExport(context, report);
               } else if (value == 'csv') {
                 await _handleCsvExport(context, report);
+              } else if (value == 'combined_invoices') {
+                await _generateCombinedInvoices(context, ref, report);
               }
             },
             itemBuilder: (context) => [
@@ -61,6 +87,16 @@ class EventReportDetailScreen extends ConsumerWidget {
                     Icon(Icons.table_chart),
                     SizedBox(width: 8),
                     Text('Export as CSV'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'combined_invoices',
+                child: Row(
+                  children: [
+                    Icon(Icons.receipt_long),
+                    SizedBox(width: 8),
+                    Text('Combined Invoices PDF'),
                   ],
                 ),
               ),
@@ -276,107 +312,123 @@ class EventReportDetailScreen extends ConsumerWidget {
   Widget _buildJudgeCard(JudgeFinancialSummary summary) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: ExpansionTile(
-        title: Text(
-          summary.judgeName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Row(
-          children: [
-            Text('Check Amount: '),
-            Text(
-              '\$${summary.totalOwed.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
-              ),
+      child: Consumer(
+        builder: (context, ref, child) {
+          return ExpansionTile(
+            title: Text(
+              summary.judgeName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-          ],
-        ),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            subtitle: Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Fees (1099):', style: TextStyle(fontSize: 16)),
-                    Text(
-                      '\$${summary.totalFees.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Expenses (Reimbursable):', style: TextStyle(fontSize: 16)),
-                    Text(
-                      '\$${summary.totalExpenses.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange,
-                      ),
-                    ),
-                  ],
-                ),
-                const Divider(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Check Amount:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text(
-                      '\$${summary.totalOwed.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  ],
-                ),
-                if (summary.expensesByCategory.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Expense Details:',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                Text('Check Amount: '),
+                Text(
+                  '\$${summary.totalOwed.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
                   ),
-                  const SizedBox(height: 8),
-                  ...summary.expensesByCategory.entries.map((entry) {
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 16.0, bottom: 4.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _getCategoryDisplayName(entry.key),
-                            style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                          ),
-                          Text(
-                            '\$${entry.value.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
+                ),
               ],
             ),
-          ),
-        ],
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Fees (1099):', style: TextStyle(fontSize: 16)),
+                        Text(
+                          '\$${summary.totalFees.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Expenses (Reimbursable):', style: TextStyle(fontSize: 16)),
+                        Text(
+                          '\$${summary.totalExpenses.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Check Amount:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text(
+                          '\$${summary.totalOwed.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (summary.expensesByCategory.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Expense Details:',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      ...summary.expensesByCategory.entries.map((entry) {
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 16.0, bottom: 4.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _getCategoryDisplayName(entry.key),
+                                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                              ),
+                              Text(
+                                '\$${entry.value.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        onPressed: () => _generateJudgeInvoice(context, ref, summary),
+                        icon: const Icon(Icons.picture_as_pdf, size: 18),
+                        label: const Text('Generate Invoice PDF'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.blue,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -481,6 +533,325 @@ class EventReportDetailScreen extends ConsumerWidget {
       await _handlePdfExport(context, report);
     } else if (action == 'csv') {
       await _handleCsvExport(context, report);
+    }
+  }
+
+  Future<void> _generateJudgeInvoice(
+    BuildContext context,
+    WidgetRef ref,
+    JudgeFinancialSummary summary,
+  ) async {
+    try {
+      // Show loading
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Generating invoice...')),
+      );
+
+      // Get event
+      final event = await ref.read(eventProvider(widget.eventId).future);
+      if (event == null) throw Exception('Event not found');
+
+      // Get judge assignment to get association and level
+      final assignments = await JudgeAssignmentRepository().getAssignmentsByEventId(widget.eventId);
+      final judgeAssignment = assignments.firstWhere(
+        (a) => a.judgeId == summary.judgeId,
+        orElse: () => throw Exception('Judge assignment not found'),
+      );
+
+      // Get judge fees - need to get the actual fee details
+      final fees = await JudgeFeeRepository().getFeesForJudgeInEvent(
+        judgeId: summary.judgeId,
+        eventId: widget.eventId,
+      );
+
+      // Get expenses
+      final expenses = await ExpenseRepository().getExpensesByJudgeAndEvent(
+        judgeId: summary.judgeId,
+        eventId: widget.eventId,
+      );
+
+      // Build a map of assignment ID to floor/session/day info for fee descriptions
+      final assignmentInfoMap = <String, String>{};
+      for (final assignment in assignments.where((a) => a.judgeId == summary.judgeId)) {
+        final floor = await EventFloorRepository().getEventFloorById(assignment.eventFloorId);
+        if (floor != null) {
+          final session = await EventSessionRepository().getEventSessionById(floor.eventSessionId);
+          if (session != null) {
+            final day = await EventDayRepository().getEventDayById(session.eventDayId);
+            if (day != null) {
+              final dayDateStr = DateFormat('MMM d, yyyy').format(day.date);
+              final startTimeStr = session.startTime.format(context);
+              final endTimeStr = session.endTime.format(context);
+              assignmentInfoMap[assignment.id] = '$dayDateStr ${session.name} ($startTimeStr - $endTimeStr) - ${floor.name}';
+            }
+          }
+        }
+      }
+
+      // Prepare fee breakdown with enhanced descriptions
+      final feeBreakdown = fees.map((fee) {
+        final baseDescription = fee.description.isNotEmpty ? fee.description : '';
+        final locationInfo = assignmentInfoMap[fee.judgeAssignmentId] ?? '';
+        final fullDescription = locationInfo.isNotEmpty
+            ? (baseDescription.isNotEmpty ? '$baseDescription - $locationInfo' : locationInfo)
+            : baseDescription;
+        
+        return {
+          'description': fullDescription,
+          'amount': fee.amount,
+        };
+      }).toList();
+
+      // Prepare expense breakdown
+      final dateFormat = DateFormat('MMM d, yyyy');
+      final expenseBreakdown = expenses.map((expense) {
+        return {
+          'date': dateFormat.format(expense.date),
+          'category': _formatExpenseCategory(expense.category.name),
+          'description': expense.description,
+          'amount': expense.amount,
+        };
+      }).toList();
+
+      // Generate PDF
+      final pdfService = PdfService();
+      final file = await pdfService.generateJudgeInvoicePdf(
+        judgeName: summary.judgeName,
+        judgeAssociation: judgeAssignment.judgeAssociation,
+        judgeLevel: judgeAssignment.judgeLevel,
+        eventName: event.name,
+        eventStartDate: event.startDate,
+        eventEndDate: event.endDate,
+        eventLocation: '${event.location.city}, ${event.location.state}',
+        totalFees: summary.totalFees,
+        totalExpenses: summary.totalExpenses,
+        feeBreakdown: feeBreakdown,
+        expenseBreakdown: expenseBreakdown,
+      );
+
+      if (!context.mounted) return;
+
+      // Share the PDF - need to provide share position for iPad
+      final box = context.findRenderObject() as RenderBox?;
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        subject: 'Invoice - ${summary.judgeName}',
+        text: 'Invoice for ${event.name}',
+        sharePositionOrigin: box != null 
+            ? box.localToGlobal(Offset.zero) & box.size 
+            : null,
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invoice generated successfully')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error generating invoice: $e')),
+        );
+      }
+    }
+  }
+
+  String _formatExpenseCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'mileage':
+        return 'Mileage';
+      case 'mealsperdiem':
+        return 'Meals & Per Diem';
+      case 'airfare':
+        return 'Airfare';
+      case 'transportation':
+        return 'Transportation';
+      case 'parking':
+        return 'Parking';
+      case 'tolls':
+        return 'Tolls';
+      case 'lodging':
+        return 'Lodging';
+      case 'other':
+        return 'Other';
+      default:
+        return category;
+    }
+  }
+
+  Future<void> _generateCombinedInvoices(
+    BuildContext context,
+    WidgetRef ref,
+    EventReport report,
+  ) async {
+    try {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Generating combined invoices...')),
+      );
+
+      // Get event
+      final event = await ref.read(eventProvider(widget.eventId).future);
+      if (event == null) throw Exception('Event not found');
+
+      // Get event structure (days, sessions, floors)
+      final eventStructure = <Map<String, dynamic>>[];
+      final days = await EventDayRepository().getEventDaysByEventId(widget.eventId);
+      final dateFormat = DateFormat('MMM d, yyyy');
+      
+      for (final day in days) {
+        final sessions = await EventSessionRepository().getEventSessionsByDayId(day.id);
+        final sessionData = <Map<String, dynamic>>[];
+        
+        for (final session in sessions) {
+          final floors = await EventFloorRepository().getEventFloorsBySessionId(session.id);
+          final floorData = <Map<String, dynamic>>[];
+          
+          for (final floor in floors) {
+            // Get judge assignments for this floor
+            final floorAssignments = await JudgeAssignmentRepository().getAssignmentsByFloorId(floor.id);
+            floorData.add({
+              'name': floor.name,
+              'judges': floorAssignments.map((a) => {
+                'name': a.judgeFullName,
+                'role': a.role,
+              }).toList(),
+            });
+          }
+          
+          sessionData.add({
+            'name': session.name,
+            'floors': floorData,
+          });
+        }
+        
+        eventStructure.add({
+          'name': 'Day ${day.dayNumber}',
+          'date': dateFormat.format(day.date),
+          'sessions': sessionData,
+        });
+      }
+
+      // Build invoice data for each judge
+      final judgeInvoices = <Map<String, dynamic>>[];
+      
+      for (final summary in report.judgeBreakdowns.values) {
+        // Get judge assignment
+        final assignments = await JudgeAssignmentRepository().getAssignmentsByEventId(widget.eventId);
+        final judgeAssignment = assignments.firstWhere(
+          (a) => a.judgeId == summary.judgeId,
+          orElse: () => throw Exception('Judge assignment not found for ${summary.judgeName}'),
+        );
+
+        // Get judge fees
+        final fees = await JudgeFeeRepository().getFeesForJudgeInEvent(
+          judgeId: summary.judgeId,
+          eventId: widget.eventId,
+        );
+
+        // Get expenses
+        final expenses = await ExpenseRepository().getExpensesByJudgeAndEvent(
+          judgeId: summary.judgeId,
+          eventId: widget.eventId,
+        );
+
+        // Build a map of assignment ID to floor/session/day info for fee descriptions
+        final assignmentInfoMap = <String, String>{};
+        final timeFormat = DateFormat('h:mm a');
+        for (final assignment in assignments.where((a) => a.judgeId == summary.judgeId)) {
+          final floor = await EventFloorRepository().getEventFloorById(assignment.eventFloorId);
+          if (floor != null) {
+            final session = await EventSessionRepository().getEventSessionById(floor.eventSessionId);
+            if (session != null) {
+              final day = await EventDayRepository().getEventDayById(session.eventDayId);
+              if (day != null) {
+                final dayDateStr = DateFormat('MMM d, yyyy').format(day.date);
+                final startTimeStr = session.startTime.format(context);
+                final endTimeStr = session.endTime.format(context);
+                assignmentInfoMap[assignment.id] = '$dayDateStr ${session.name} ($startTimeStr - $endTimeStr) - ${floor.name}';
+              }
+            }
+          }
+        }
+
+        // Prepare fee breakdown with enhanced descriptions
+        final feeBreakdown = fees.map((fee) {
+          final baseDescription = fee.description.isNotEmpty ? fee.description : '';
+          final locationInfo = assignmentInfoMap[fee.judgeAssignmentId] ?? '';
+          final fullDescription = locationInfo.isNotEmpty
+              ? (baseDescription.isNotEmpty ? '$baseDescription - $locationInfo' : locationInfo)
+              : baseDescription;
+          
+          return {
+            'description': fullDescription,
+            'amount': fee.amount,
+          };
+        }).toList();
+
+        // Prepare expense breakdown
+        final dateFormat = DateFormat('MMM d, yyyy');
+        final expenseBreakdown = expenses.map((expense) {
+          return {
+            'date': dateFormat.format(expense.date),
+            'category': _formatExpenseCategory(expense.category.name),
+            'description': expense.description,
+            'amount': expense.amount,
+          };
+        }).toList();
+
+        judgeInvoices.add({
+          'judgeName': summary.judgeName,
+          'judgeAssociation': judgeAssignment.judgeAssociation,
+          'judgeLevel': judgeAssignment.judgeLevel,
+          'totalFees': summary.totalFees,
+          'totalExpenses': summary.totalExpenses,
+          'feeBreakdown': feeBreakdown,
+          'expenseBreakdown': expenseBreakdown,
+        });
+      }
+
+      // Sort judges by name
+      judgeInvoices.sort((a, b) => (a['judgeName'] as String).compareTo(b['judgeName'] as String));
+
+      // Generate combined PDF
+      final pdfService = PdfService();
+      final file = await pdfService.generateCombinedInvoicesPdf(
+        eventName: event.name,
+        eventStartDate: event.startDate,
+        eventEndDate: event.endDate,
+        eventLocation: '${event.location.city}, ${event.location.state}',
+        totalFees: report.totalFees,
+        totalExpenses: report.totalExpenses,
+        judgeInvoices: judgeInvoices,
+        report: report,
+        eventStructure: eventStructure,
+      );
+
+      if (!context.mounted) return;
+
+      // Share the PDF
+      final box = context.findRenderObject() as RenderBox?;
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        subject: 'Combined Invoices - ${event.name}',
+        text: 'Combined invoices for all judges',
+        sharePositionOrigin: box != null 
+            ? box.localToGlobal(Offset.zero) & box.size 
+            : null,
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Generated ${judgeInvoices.length} invoices successfully')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error generating combined invoices: $e')),
+        );
+      }
     }
   }
 }

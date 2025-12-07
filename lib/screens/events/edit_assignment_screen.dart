@@ -9,6 +9,7 @@ import '../../repositories/judge_assignment_repository.dart';
 import '../../repositories/judge_fee_repository.dart';
 import '../../repositories/event_session_repository.dart';
 import '../../repositories/event_floor_repository.dart';
+import '../../repositories/event_day_repository.dart';
 import '../../providers/judge_assignment_provider.dart';
 import '../../providers/judge_fee_provider.dart';
 import '../../providers/expense_provider.dart';
@@ -29,7 +30,7 @@ class EditAssignmentScreen extends ConsumerStatefulWidget {
   ConsumerState<EditAssignmentScreen> createState() => _EditAssignmentScreenState();
 }
 
-class _EditAssignmentScreenState extends ConsumerState<EditAssignmentScreen> {
+class _EditAssignmentScreenState extends ConsumerState<EditAssignmentScreen> with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
   final _roleController = TextEditingController();
   final _hourlyRateController = TextEditingController();
@@ -41,14 +42,29 @@ class _EditAssignmentScreenState extends ConsumerState<EditAssignmentScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadData();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _roleController.dispose();
     _hourlyRateController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Refresh data when the app resumes (e.g., after navigating back)
+      _loadData();
+      // Also invalidate the providers to refresh the UI
+      if (_assignment != null && _eventId != null) {
+        ref.invalidate(feesForJudgeInEventProvider((judgeId: _assignment!.judgeId, eventId: _eventId!)));
+        ref.invalidate(expensesByJudgeAndEventProvider((judgeId: _assignment!.judgeId, eventId: _eventId!)));
+      }
+    }
   }
 
   Future<void> _loadData() async {
@@ -58,13 +74,16 @@ class _EditAssignmentScreenState extends ConsumerState<EditAssignmentScreen> {
       
       final assignment = await assignmentRepo.getAssignmentById(widget.assignmentId);
       
-      // Get event ID from floor
+      // Get event ID from floor -> session -> day -> event
       String? eventId;
       if (assignment != null) {
         final floor = await floorRepo.getEventFloorById(assignment.eventFloorId);
         if (floor != null) {
           final session = await EventSessionRepository().getEventSessionById(floor.eventSessionId);
-          eventId = session?.eventDayId;
+          if (session != null) {
+            final day = await EventDayRepository().getEventDayById(session.eventDayId);
+            eventId = day?.eventId;
+          }
         }
       }
       
@@ -417,8 +436,12 @@ class _EditAssignmentScreenState extends ConsumerState<EditAssignmentScreen> {
             // Expense Summary
             Consumer(
               builder: (context, ref, child) {
-                final expensesAsync = ref.watch(expensesByAssignmentProvider(widget.assignmentId));
-                final totalAsync = ref.watch(totalExpensesByAssignmentProvider(widget.assignmentId));
+                if (_assignment == null || _eventId == null) {
+                  return const SizedBox.shrink();
+                }
+                
+                final expensesAsync = ref.watch(expensesByJudgeAndEventProvider((judgeId: _assignment!.judgeId, eventId: _eventId!)));
+                final totalAsync = ref.watch(totalExpensesByJudgeAndEventProvider((judgeId: _assignment!.judgeId, eventId: _eventId!)));
                 
                 return expensesAsync.when(
                   data: (expenses) {
@@ -469,8 +492,8 @@ class _EditAssignmentScreenState extends ConsumerState<EditAssignmentScreen> {
                           error: (_, __) => const SizedBox.shrink(),
                         ),
                         const SizedBox(height: 8),
-                        // Expenses list
-                        ...expenses.take(3).map((expense) => Card(
+                        // Expenses list - show all expenses
+                        ...expenses.map((expense) => Card(
                           margin: const EdgeInsets.only(bottom: 8),
                           child: ListTile(
                             leading: Icon(_getExpenseIcon(expense.category)),
@@ -492,13 +515,6 @@ class _EditAssignmentScreenState extends ConsumerState<EditAssignmentScreen> {
                             },
                           ),
                         )),
-                        if (expenses.length > 3)
-                          TextButton(
-                            onPressed: () {
-                              context.push('/expenses?assignmentId=${widget.assignmentId}');
-                            },
-                            child: Text('View all ${expenses.length} expenses'),
-                          ),
                       ],
                     );
                   },

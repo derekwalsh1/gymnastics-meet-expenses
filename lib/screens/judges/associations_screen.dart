@@ -13,6 +13,15 @@ class AssociationsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Judge Associations'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.import_export),
+            tooltip: 'Import/Export Judge Levels',
+            onPressed: () {
+              context.push('/judge-levels/import-export');
+            },
+          ),
+        ],
       ),
       body: judgeLevelsAsync.when(
         data: (levels) {

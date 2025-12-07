@@ -1,0 +1,108 @@
+First Name,Last Name,Contact Info,Notes,Association,Level,Archived
+Alice,Anderson,alice.anderson@email.com,Experienced judge,NAWGJ,National,false
+Alice,Anderson,alice.anderson@email.com,Experienced judge,NGA,Elite,false
+Alice,Anderson,alice.anderson@email.com,Experienced judge,FIG,FIG Brevet,false
+Bob,Baker,555-0102,Available weekends,NAWGJ,Brevet,false
+Bob,Baker,555-0102,Available weekends,USAG,USAG National,false
+Carol,Chen,carol.chen@email.com,,NGA,National,false
+Carol,Chen,carol.chen@email.com,,AAU,AAU Level 5,false
+David,Davis,david.d@email.com,Prefers local meets,NAWGJ,Ten,false
+David,Davis,david.d@email.com,Prefers local meets,USAG,USAG Regional,false
+Emily,Evans,555-0105,,NGA,Regional,false
+Emily,Evans,555-0105,,AAU,AAU Level 4,false
+Frank,Fisher,frank.f@email.com,Certified trainer,NAWGJ,Nine,false
+Frank,Fisher,frank.f@email.com,Certified trainer,NGJA,NGJA Master,false
+Grace,Green,grace.green@email.com,New judge,NGA,State,false
+Grace,Green,grace.green@email.com,New judge,AAU,AAU Level 3,false
+Henry,Harris,555-0108,Bilingual,NAWGJ,6-8,false
+Henry,Harris,555-0108,Bilingual,USAG,USAG State,false
+Irene,Ivanov,irene.i@email.com,,NGA,Local,false
+Irene,Ivanov,irene.i@email.com,,AAU,AAU Level 2,false
+Jack,Johnson,jack.j@email.com,Retired coach,NAWGJ,National,false
+Jack,Johnson,jack.j@email.com,Retired coach,NGA,Elite,false
+Jack,Johnson,jack.j@email.com,Retired coach,MAG,MAG National,false
+Karen,King,555-0111,Available evenings,USAG,USAG Local,false
+Karen,King,555-0111,Available evenings,AAU,AAU Level 1,false
+Larry,Lee,larry.lee@email.com,Veteran judge,NAWGJ,Brevet,false
+Larry,Lee,larry.lee@email.com,Veteran judge,FIG,FIG Category 1,false
+Mary,Martinez,mary.m@email.com,,NGA,National,false
+Mary,Martinez,mary.m@email.com,,NGJA,NGJA Senior,false
+Nancy,Nelson,555-0114,Prefers girls events,NAWGJ,Ten,false
+Nancy,Nelson,555-0114,Prefers girls events,USAG,USAG Regional,false
+Oscar,O'Brien,oscar.o@email.com,,NGA,Regional,false
+Oscar,O'Brien,oscar.o@email.com,,AAU,AAU Level 5,false
+Patricia,Peterson,patricia.p@email.com,Team mom experience,NAWGJ,Nine,false
+Patricia,Peterson,patricia.p@email.com,Team mom experience,MAG,MAG Regional,false
+Quincy,Quinn,555-0117,,NGA,State,false
+Quincy,Quinn,555-0117,,AAU,AAU Level 4,false
+Rachel,Roberts,rachel.r@email.com,Loves judging bars,NAWGJ,National,false
+Rachel,Roberts,rachel.r@email.com,Loves judging bars,FIG,FIG Brevet,false
+Sam,Smith,sam.smith@email.com,Reliable,NGA,Elite,false
+Sam,Smith,sam.smith@email.com,Reliable,NGJA,NGJA Master,false
+Tina,Turner,555-0120,Available all year,NAWGJ,Brevet,false
+Tina,Turner,555-0120,Available all year,USAG,USAG National,false
+Uma,Underwood,uma.u@email.com,,NGA,National,false
+Uma,Underwood,uma.u@email.com,,AAU,AAU Level 5,false
+Victor,Valdez,victor.v@email.com,Fluent in Spanish,NAWGJ,Ten,false
+Victor,Valdez,victor.v@email.com,Fluent in Spanish,USAG,USAG Regional,false
+Wendy,Wilson,555-0123,Former gymnast,NGA,Regional,false
+Wendy,Wilson,555-0123,Former gymnast,AAU,AAU Level 4,false
+Xavier,Xu,xavier.x@email.com,International experience,NAWGJ,National,false
+Xavier,Xu,xavier.x@email.com,International experience,FIG,FIG Category 2,false
+Yolanda,Young,yolanda.y@email.com,,NGA,Elite,false
+Yolanda,Young,yolanda.y@email.com,,NGJA,NGJA Senior,false
+Zachary,Zhang,555-0126,Prefers vault,NAWGJ,Brevet,false
+Zachary,Zhang,555-0126,Prefers vault,USAG,USAG State,false
+Amy,Adams,amy.adams@email.com,,NGA,National,false
+Amy,Adams,amy.adams@email.com,,AAU,AAU Level 3,false
+Brian,Brown,brian.b@email.com,Certified safety,NAWGJ,Nine,false
+Brian,Brown,brian.b@email.com,Certified safety,MAG,MAG State,false
+Cathy,Carter,555-0129,,NGA,Regional,false
+Cathy,Carter,555-0129,,AAU,AAU Level 2,false
+Daniel,Dixon,daniel.d@email.com,Prefers beam,NAWGJ,National,false
+Daniel,Dixon,daniel.d@email.com,Prefers beam,FIG,FIG Category 1,false
+Ellen,Edwards,ellen.e@email.com,Flexible schedule,NGA,Elite,false
+Ellen,Edwards,ellen.e@email.com,Flexible schedule,NGJA,NGJA Master,false
+Fred,Foster,555-0132,,NAWGJ,Ten,false
+Fred,Foster,555-0132,,USAG,USAG Local,false
+Gina,Garcia,gina.g@email.com,,NGA,National,false
+Gina,Garcia,gina.g@email.com,,AAU,AAU Level 5,false
+Howard,Hughes,howard.h@email.com,Prefers floor,NAWGJ,6-8,false
+Howard,Hughes,howard.h@email.com,Prefers floor,USAG,USAG Regional,false
+Iris,Ingram,555-0135,New to area,NGA,State,false
+Iris,Ingram,555-0135,New to area,AAU,AAU Level 4,false
+James,Jackson,james.j@email.com,Long-time judge,NAWGJ,National,false
+James,Jackson,james.j@email.com,Long-time judge,NGA,Elite,false
+James,Jackson,james.j@email.com,Long-time judge,FIG,FIG Brevet,false
+Kelly,Kelly,kelly.k@email.com,,NAWGJ,Brevet,false
+Kelly,Kelly,kelly.k@email.com,,NGJA,NGJA Senior,false
+Leo,Lopez,555-0138,Gym owner,NGA,National,false
+Leo,Lopez,555-0138,Gym owner,USAG,USAG National,false
+Monica,Moore,monica.m@email.com,,NAWGJ,Ten,false
+Monica,Moore,monica.m@email.com,,AAU,AAU Level 5,false
+Nathan,Nguyen,nathan.n@email.com,Former college gymnast,NGA,Regional,false
+Nathan,Nguyen,nathan.n@email.com,Former college gymnast,MAG,MAG Regional,false
+Olivia,Olson,555-0141,,NAWGJ,Nine,false
+Olivia,Olson,555-0141,,AAU,AAU Level 3,false
+Paul,Parker,paul.p@email.com,Safety certified,NAWGJ,National,false
+Paul,Parker,paul.p@email.com,Safety certified,FIG,FIG Category 3,false
+Quinn,Quigley,quinn.q@email.com,Available weekdays,NGA,Elite,false
+Quinn,Quigley,quinn.q@email.com,Available weekdays,NGJA,NGJA Intermediate,false
+Rita,Rivera,555-0144,,NAWGJ,Brevet,false
+Rita,Rivera,555-0144,,USAG,USAG State,false
+Steve,Sullivan,steve.s@email.com,,NGA,National,false
+Steve,Sullivan,steve.s@email.com,,AAU,AAU Level 4,false
+Tracy,Taylor,tracy.t@email.com,Prefers compulsory,NAWGJ,6-8,false
+Tracy,Taylor,tracy.t@email.com,Prefers compulsory,USAG,USAG Local,false
+Ursula,Upton,555-0147,,NGA,State,false
+Ursula,Upton,555-0147,,AAU,AAU Level 2,false
+Vincent,Vance,vincent.v@email.com,Travel judge,NAWGJ,National,false
+Vincent,Vance,vincent.v@email.com,Travel judge,FIG,FIG Category 1,false
+William,White,william.w@email.com,Retired teacher,NGA,Elite,false
+William,White,william.w@email.com,Retired teacher,NGJA,NGJA Master,false
+Xena,Xiao,555-0150,New certification,NAWGJ,Ten,false
+Xena,Xiao,555-0150,New certification,USAG,USAG Regional,false
+Yvonne,Yates,yvonne.y@email.com,,NGA,National,false
+Yvonne,Yates,yvonne.y@email.com,,AAU,AAU Level 5,false
+Zoe,Zimmerman,zoe.z@email.com,Loves optional,NAWGJ,4-5,false
+Zoe,Zimmerman,zoe.z@email.com,Loves optional,NGJA,NGJA Junior,false

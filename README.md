@@ -1,4 +1,4 @@
-# NAWGJ Expense Tracker
+# Gymnastics Judging Expense Tracker
 
 A cross-platform mobile application for gymnastics meet managers to track and manage expenses for gymnastics meets.
 

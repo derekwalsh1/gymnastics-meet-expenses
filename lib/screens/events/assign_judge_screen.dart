@@ -35,6 +35,7 @@ class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
   String? selectedRole;
   double? customHourlyRate;
   final TextEditingController _rateController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   String _searchQuery = '';
   bool _assigningJudges = false;
 
@@ -51,6 +52,7 @@ class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
   @override
   void dispose() {
     _rateController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -255,6 +257,7 @@ class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
             }
 
             return ListView.builder(
+              controller: _scrollController,
               itemCount: filteredJudges.length,
               itemBuilder: (context, index) {
                 final judgeWithLevels = filteredJudges[index];

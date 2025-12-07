@@ -8,7 +8,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('NAWGJ Expense Tracker'),
+        title: const Text('Gymnastics Judging Expense Tracker'),
         centerTitle: true,
       ),
       body: Padding(
@@ -57,18 +57,6 @@ class HomeScreen extends StatelessWidget {
                     title: 'Events',
                     subtitle: 'View all events',
                     onTap: () => context.push('/events'),
-                  ),
-                  _QuickActionCard(
-                    icon: Icons.assessment,
-                    title: 'Reports',
-                    subtitle: 'Financial reports',
-                    onTap: () => context.push('/reports'),
-                  ),
-                  _QuickActionCard(
-                    icon: Icons.receipt_long,
-                    title: 'Expenses',
-                    subtitle: 'Track expenses',
-                    onTap: () => context.push('/expenses'),
                   ),
                   _QuickActionCard(
                     icon: Icons.settings,

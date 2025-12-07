@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/expense.dart';
 import '../../providers/expense_provider.dart';
+import '../../providers/report_provider.dart';
 import '../../repositories/expense_repository.dart';
 
 class AddEditExpenseScreen extends ConsumerStatefulWidget {
@@ -286,6 +287,8 @@ class _AddEditExpenseScreenState extends ConsumerState<AddEditExpenseScreen> {
       if (widget.eventId != null) {
         ref.invalidate(expensesByEventProvider(widget.eventId!));
         ref.invalidate(totalExpensesByEventProvider(widget.eventId!));
+        // Invalidate the event report so it refreshes
+        ref.invalidate(eventReportProvider(widget.eventId!));
       }
       if (widget.judgeId != null) {
         ref.invalidate(expensesByJudgeProvider(widget.judgeId!));

@@ -1,7 +1,7 @@
 # Phase 5: Expense Tracking - Implementation Complete
 
 ## Overview
-Successfully implemented comprehensive expense tracking system for the NAWGJ Expense Tracker app. Judges can now record all event-related expenses with category-specific fields, automatic calculations, and receipt photo management.
+Successfully implemented comprehensive expense tracking system for the Gymnastics Judging Expense Tracker app. Judges can now record all event-related expenses with category-specific fields, automatic calculations, and receipt photo management.
 
 ## Implementation Summary
 
