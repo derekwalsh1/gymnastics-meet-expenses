@@ -140,7 +140,7 @@ See [PROJECT_PLAN.md](PROJECT_PLAN.md) for the complete project plan.
 ## Support
 
 For questions, bug reports, or feature requests:
-- 📧 Email: support@gymnasticsmeetexpenses.app
+- 📧 Email: derek.walsh@gmail.com
 - 🌐 Website: [GitHub Pages](https://derekwalsh1.github.io/gymnastics-meet-expenses/)
 
 ## Privacy
