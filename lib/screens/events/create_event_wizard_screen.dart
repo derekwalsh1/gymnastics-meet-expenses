@@ -31,7 +31,6 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
   final _zipController = TextEditingController();
   final _descriptionController = TextEditingController();
   DateTime? _startDate;
-  DateTime? _endDate;
   String? _selectedAssociationId;
 
   // Step 2: Template Selection
@@ -58,9 +57,9 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
   void _nextStep() {
     if (_currentStep == 0) {
       if (!_formKey.currentState!.validate()) return;
-      if (_startDate == null || _endDate == null) {
+      if (_startDate == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select start and end dates')),
+          const SnackBar(content: Text('Please select start date')),
         );
         return;
       }
@@ -91,9 +90,9 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
     // Validate basic info
     if (_formKey.currentState?.validate() == false) return;
     
-    if (_startDate == null || _endDate == null) {
+    if (_startDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select start and end dates')),
+        const SnackBar(content: Text('Please select start date')),
       );
       return;
     }
@@ -108,11 +107,14 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
 
       print('DEBUG: Creating event with name: ${_nameController.text}');
       
+      // Calculate end date from start date and number of days
+      final endDate = _startDate!.add(Duration(days: _numberOfDays - 1));
+      
       // Calculate status based on dates
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final start = DateTime(_startDate!.year, _startDate!.month, _startDate!.day);
-      final end = DateTime(_endDate!.year, _endDate!.month, _endDate!.day);
+      final end = DateTime(endDate.year, endDate.month, endDate.day);
       
       final EventStatus eventStatus;
       if (today.isAfter(end)) {
@@ -128,7 +130,7 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
       final event = await eventRepo.createEvent(
         name: _nameController.text,
         startDate: _startDate!,
-        endDate: _endDate!,
+        endDate: endDate,
         status: eventStatus,
         location: EventLocation(
           venueName: _venueController.text,
@@ -350,42 +352,28 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
           ),
           const SizedBox(height: 16),
 
-          Row(
-            children: [
-              Expanded(
-                child: ListTile(
-                  title: const Text('Start Date *'),
-                  subtitle: Text(_startDate?.toString().split(' ')[0] ?? 'Not selected'),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: _startDate ?? DateTime.now(),
-                      firstDate: DateTime.now().subtract(const Duration(days: 3650)), // 10 years ago
-                      lastDate: DateTime.now().add(const Duration(days: 730)), // 2 years ahead
-                    );
-                    if (date != null) setState(() => _startDate = date);
-                  },
-                ),
-              ),
-              Expanded(
-                child: ListTile(
-                  title: const Text('End Date *'),
-                  subtitle: Text(_endDate?.toString().split(' ')[0] ?? 'Not selected'),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: _endDate ?? _startDate ?? DateTime.now(),
-                      firstDate: _startDate ?? DateTime.now().subtract(const Duration(days: 3650)),
-                      lastDate: DateTime.now().add(const Duration(days: 730)),
-                    );
-                    if (date != null) setState(() => _endDate = date);
-                  },
-                ),
-              ),
-            ],
+          ListTile(
+            title: const Text('Start Date *'),
+            subtitle: Text(_startDate?.toString().split(' ')[0] ?? 'Not selected'),
+            trailing: const Icon(Icons.calendar_today),
+            onTap: () async {
+              final date = await showDatePicker(
+                context: context,
+                initialDate: _startDate ?? DateTime.now(),
+                firstDate: DateTime.now().subtract(const Duration(days: 3650)), // 10 years ago
+                lastDate: DateTime.now().add(const Duration(days: 730)), // 2 years ahead
+              );
+              if (date != null) setState(() => _startDate = date);
+            },
           ),
+          if (_startDate != null && _numberOfDays > 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'End Date: ${_startDate!.add(Duration(days: _numberOfDays - 1)).toString().split(' ')[0]}',
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              ),
+            ),
           const SizedBox(height: 16),
 
           TextFormField(
@@ -655,7 +643,7 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
         _buildReviewSection('Event Information', [
           _buildReviewItem('Name', _nameController.text),
           _buildReviewItem('Association', _selectedAssociationId ?? 'None'),
-          _buildReviewItem('Dates', '${_startDate?.toString().split(' ')[0]} - ${_endDate?.toString().split(' ')[0]}'),
+          _buildReviewItem('Dates', '${_startDate?.toString().split(' ')[0]} - ${_startDate?.add(Duration(days: _numberOfDays - 1)).toString().split(' ')[0]}'),
           _buildReviewItem('Venue', _venueController.text),
           _buildReviewItem('Location', '${_cityController.text}, ${_stateController.text}'),
         ]),

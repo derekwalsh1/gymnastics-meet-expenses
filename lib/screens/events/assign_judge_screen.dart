@@ -9,6 +9,7 @@ import '../../models/judge_level.dart';
 import '../../providers/event_provider.dart';
 import '../../providers/judge_provider.dart';
 import '../../providers/judge_assignment_provider.dart';
+import '../../providers/judge_fee_provider.dart';
 import '../../repositories/event_floor_repository.dart';
 import '../../repositories/event_session_repository.dart';
 import '../../repositories/judge_assignment_repository.dart';
@@ -36,6 +37,16 @@ class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
   final TextEditingController _rateController = TextEditingController();
   String _searchQuery = '';
   bool _assigningJudges = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Refresh judges list when screen opens to pick up any newly added judges
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(judgesWithLevelsProvider);
+      ref.invalidate(availableJudgesForSessionProvider(widget.sessionId));
+    });
+  }
 
   @override
   void dispose() {
@@ -457,6 +468,18 @@ class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
         // Invalidate providers to refresh data
         ref.invalidate(assignmentsByFloorProvider(widget.floorId));
         ref.invalidate(availableJudgesForSessionProvider(widget.sessionId));
+        
+        // Invalidate fee totals
+        ref.invalidate(totalFeesForFloorProvider(widget.floorId));
+        ref.invalidate(totalFeesForSessionProvider(widget.sessionId));
+        
+        // Get session to invalidate day total
+        try {
+          final session = await EventSessionRepository().getEventSessionById(widget.sessionId);
+          if (session != null) {
+            ref.invalidate(totalFeesForDayProvider(session.eventDayId));
+          }
+        } catch (_) {}
 
         // Clear selection after successful assignment
         setState(() {

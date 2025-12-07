@@ -8,6 +8,7 @@ class Expense {
   final String eventId;
   final String? judgeId;
   final String? sessionId;
+  final String? judgeAssignmentId;
   final ExpenseCategory category;
   
   // Category-specific fields
@@ -34,6 +35,7 @@ class Expense {
     required this.eventId,
     this.judgeId,
     this.sessionId,
+    this.judgeAssignmentId,
     required this.category,
     this.distance,
     this.mileageRate,
@@ -57,6 +59,7 @@ class Expense {
     String? eventId,
     String? judgeId,
     String? sessionId,
+    String? judgeAssignmentId,
     ExpenseCategory? category,
     double? distance,
     double? mileageRate,
@@ -79,6 +82,7 @@ class Expense {
       eventId: eventId ?? this.eventId,
       judgeId: judgeId ?? this.judgeId,
       sessionId: sessionId ?? this.sessionId,
+      judgeAssignmentId: judgeAssignmentId ?? this.judgeAssignmentId,
       category: category ?? this.category,
       distance: distance ?? this.distance,
       mileageRate: mileageRate ?? this.mileageRate,
@@ -107,6 +111,7 @@ class Expense {
       'eventId': eventId,
       'judgeId': judgeId,
       'sessionId': sessionId,
+      'judgeAssignmentId': judgeAssignmentId,
       'category': category.name,
       'distance': distance,
       'mileageRate': mileageRate,
@@ -132,6 +137,7 @@ class Expense {
       eventId: map['eventId'] as String,
       judgeId: map['judgeId'] as String?,
       sessionId: map['sessionId'] as String?,
+      judgeAssignmentId: map['judgeAssignmentId'] as String?,
       category: ExpenseCategory.values.firstWhere((e) => e.name == map['category']),
       distance: map['distance'] as double?,
       mileageRate: map['mileageRate'] as double?,

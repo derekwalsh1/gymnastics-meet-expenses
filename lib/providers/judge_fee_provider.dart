@@ -30,3 +30,21 @@ final feesForJudgeInEventProvider = FutureProvider.family<List<JudgeFee>, ({Stri
   final repository = ref.watch(judgeFeeRepositoryProvider);
   return repository.getFeesForJudgeInEvent(judgeId: params.judgeId, eventId: params.eventId);
 });
+
+// Total fees for a floor
+final totalFeesForFloorProvider = FutureProvider.family<double, String>((ref, floorId) async {
+  final repository = ref.watch(judgeFeeRepositoryProvider);
+  return repository.getTotalFeesForFloor(floorId);
+});
+
+// Total fees for a session
+final totalFeesForSessionProvider = FutureProvider.family<double, String>((ref, sessionId) async {
+  final repository = ref.watch(judgeFeeRepositoryProvider);
+  return repository.getTotalFeesForSession(sessionId);
+});
+
+// Total fees for a day
+final totalFeesForDayProvider = FutureProvider.family<double, String>((ref, dayId) async {
+  final repository = ref.watch(judgeFeeRepositoryProvider);
+  return repository.getTotalFeesForDay(dayId);
+});

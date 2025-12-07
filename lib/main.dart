@@ -9,8 +9,16 @@ import 'screens/judges/add_edit_judge_level_screen.dart';
 import 'screens/events/events_list_screen.dart';
 import 'screens/events/create_event_wizard_screen.dart';
 import 'screens/events/event_detail_screen.dart';
+import 'screens/events/edit_event_screen.dart';
 import 'screens/events/assign_judge_screen.dart';
+import 'screens/events/edit_assignment_screen.dart';
 import 'screens/fees/manage_fees_screen.dart';
+import 'screens/expenses/expense_list_screen.dart';
+import 'screens/expenses/add_edit_expense_screen.dart';
+import 'screens/expenses/expense_detail_screen.dart';
+import 'screens/settings/settings_screen.dart';
+import 'services/database_service.dart';
+import 'screens/expenses/expense_detail_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'services/database_service.dart';
 
@@ -124,6 +132,13 @@ final _router = GoRouter(
       },
     ),
     GoRoute(
+      path: '/events/:id/edit',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return EditEventScreen(eventId: id);
+      },
+    ),
+    GoRoute(
       path: '/events/:eventId/floors/:floorId/assign-judge',
       builder: (context, state) {
         final eventId = state.pathParameters['eventId']!;
@@ -148,8 +163,59 @@ final _router = GoRouter(
       },
     ),
     GoRoute(
+      path: '/assignments/:assignmentId/edit',
+      builder: (context, state) {
+        final assignmentId = state.pathParameters['assignmentId']!;
+        final floorId = state.uri.queryParameters['floorId']!;
+        final sessionId = state.uri.queryParameters['sessionId']!;
+        return EditAssignmentScreen(
+          assignmentId: assignmentId,
+          floorId: floorId,
+          sessionId: sessionId,
+        );
+      },
+    ),
+    GoRoute(
       path: '/settings',
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/expenses',
+      builder: (context, state) {
+        final eventId = state.uri.queryParameters['eventId'];
+        final judgeId = state.uri.queryParameters['judgeId'];
+        final assignmentId = state.uri.queryParameters['assignmentId'];
+        return ExpenseListScreen(
+          eventId: eventId,
+          judgeId: judgeId,
+          assignmentId: assignmentId,
+        );
+      },
+    ),
+    GoRoute(
+      path: '/expenses/add',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return AddEditExpenseScreen(
+          eventId: extra?['eventId'],
+          judgeId: extra?['judgeId'],
+          assignmentId: extra?['assignmentId'],
+        );
+      },
+    ),
+    GoRoute(
+      path: '/expenses/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return ExpenseDetailScreen(expenseId: id);
+      },
+    ),
+    GoRoute(
+      path: '/expenses/:id/edit',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return AddEditExpenseScreen(expenseId: id);
+      },
     ),
   ],
 );

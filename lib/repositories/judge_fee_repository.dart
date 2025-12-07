@@ -132,4 +132,43 @@ class JudgeFeeRepository {
     final fees = await getFeesForJudgeInEvent(judgeId: judgeId, eventId: eventId);
     return fees.fold<double>(0.0, (sum, fee) => sum + fee.amount);
   }
+
+  // Get total fees for all assignments on a floor
+  Future<double> getTotalFeesForFloor(String floorId) async {
+    final db = await _dbService.database;
+    final result = await db.rawQuery('''
+      SELECT COALESCE(SUM(jf.amount), 0) as total
+      FROM judge_fees jf
+      INNER JOIN judge_assignments ja ON jf.judgeAssignmentId = ja.id
+      WHERE ja.eventFloorId = ?
+    ''', [floorId]);
+    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  // Get total fees for all assignments in a session
+  Future<double> getTotalFeesForSession(String sessionId) async {
+    final db = await _dbService.database;
+    final result = await db.rawQuery('''
+      SELECT COALESCE(SUM(jf.amount), 0) as total
+      FROM judge_fees jf
+      INNER JOIN judge_assignments ja ON jf.judgeAssignmentId = ja.id
+      INNER JOIN event_floors ef ON ja.eventFloorId = ef.id
+      WHERE ef.eventSessionId = ?
+    ''', [sessionId]);
+    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  // Get total fees for all assignments in a day
+  Future<double> getTotalFeesForDay(String dayId) async {
+    final db = await _dbService.database;
+    final result = await db.rawQuery('''
+      SELECT COALESCE(SUM(jf.amount), 0) as total
+      FROM judge_fees jf
+      INNER JOIN judge_assignments ja ON jf.judgeAssignmentId = ja.id
+      INNER JOIN event_floors ef ON ja.eventFloorId = ef.id
+      INNER JOIN event_sessions es ON ef.eventSessionId = es.id
+      WHERE es.eventDayId = ?
+    ''', [dayId]);
+    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
+  }
 }

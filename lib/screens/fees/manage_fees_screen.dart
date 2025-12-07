@@ -244,7 +244,9 @@ class _FeeCard extends StatelessWidget {
             Text(_getFeeTypeLabel(fee.feeType)),
             if (fee.hours != null)
               Text('${fee.hours!.toStringAsFixed(1)} hours'),
-            Row(
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
               children: [
                 if (fee.isTaxable)
                   Container(
@@ -258,8 +260,7 @@ class _FeeCard extends StatelessWidget {
                       style: TextStyle(fontSize: 10, color: Colors.orange),
                     ),
                   ),
-                if (fee.isAutoCalculated) ...[
-                  const SizedBox(width: 4),
+                if (fee.isAutoCalculated)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
@@ -271,7 +272,6 @@ class _FeeCard extends StatelessWidget {
                       style: TextStyle(fontSize: 10, color: Colors.blue),
                     ),
                   ),
-                ],
               ],
             ),
           ],
@@ -399,13 +399,15 @@ class _AddEditFeeDialogState extends ConsumerState<_AddEditFeeDialog> {
                   border: OutlineInputBorder(),
                 ),
                 items: FeeType.values
-                    .where((type) => type != FeeType.sessionRate)
+                    .where((type) => 
+                      type != FeeType.sessionRate || 
+                      (widget.fee != null && widget.fee!.feeType == FeeType.sessionRate))
                     .map((type) => DropdownMenuItem(
                           value: type,
                           child: Text(_getFeeTypeLabel(type)),
                         ))
                     .toList(),
-                onChanged: (value) {
+                onChanged: widget.fee?.feeType == FeeType.sessionRate ? null : (value) {
                   if (value != null) {
                     setState(() => _selectedType = value);
                   }
