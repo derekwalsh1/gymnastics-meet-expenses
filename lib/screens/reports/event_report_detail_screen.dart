@@ -401,7 +401,7 @@ class EventReportDetailScreen extends ConsumerWidget {
       case 'judgeFees':
         return 'Judge Fees';
       default:
-        return category;
+        return categoryName;
     }
   }
 
