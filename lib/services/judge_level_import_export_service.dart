@@ -35,19 +35,23 @@ class JudgeLevelImportExportService {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final fileName = 'judge_levels_$timestamp.json';
     
-    // On Android: try to save to Download folder for user accessibility
-    // On iOS: use app documents directory (iOS doesn't have public Downloads)
-    final externalDir = await getExternalStorageDirectory();
     late File file;
     
-    if (externalDir != null) {
-      // Android: Save to /storage/emulated/0/Download/
-      try {
-        final basePath = externalDir.path.split('/Android/')[0];
-        file = File('$basePath/Download/$fileName');
-        await file.parent.create(recursive: true);
-      } catch (e) {
-        // Fallback if path extraction fails
+    if (Platform.isAndroid) {
+      // On Android: try to save to Download folder for user accessibility
+      final externalDir = await getExternalStorageDirectory();
+      if (externalDir != null) {
+        try {
+          final basePath = externalDir.path.split('/Android/')[0];
+          file = File('$basePath/Download/$fileName');
+          await file.parent.create(recursive: true);
+        } catch (e) {
+          // Fallback if path extraction fails
+          final docDir = await getApplicationDocumentsDirectory();
+          file = File('${docDir.path}/$fileName');
+        }
+      } else {
+        // Fallback if getExternalStorageDirectory fails
         final docDir = await getApplicationDocumentsDirectory();
         file = File('${docDir.path}/$fileName');
       }
