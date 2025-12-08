@@ -1,7 +1,7 @@
 # Gymnastics Judges Expense Management App - Project Plan
 
 ## Project Overview
-**App Name:** NAWGJ Expense Tracker (Name TBD)
+**App Name:** Gymnastics Judging Expense Tracker
 **Platform:** Cross-platform (iOS & Android)
 **Technology:** Flutter
 **Target Users:** Meet managers (judges organizing meets) who create expense reports for event organizers
