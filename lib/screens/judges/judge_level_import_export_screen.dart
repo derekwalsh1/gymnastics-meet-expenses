@@ -117,6 +117,9 @@ class _JudgeLevelImportExportScreenState extends ConsumerState<JudgeLevelImportE
         type: FileType.custom,
         allowedExtensions: ['json'],
         allowMultiple: false,
+        initialDirectory: Platform.isAndroid 
+            ? '/storage/emulated/0/Download'
+            : null, // iOS uses system default
       );
 
       if (result == null || result.files.isEmpty) return;

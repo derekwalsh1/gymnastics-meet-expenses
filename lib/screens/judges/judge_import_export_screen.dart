@@ -114,11 +114,16 @@ class _JudgeImportExportScreenState extends ConsumerState<JudgeImportExportScree
 
   Future<void> _importJudges() async {
     try {
-      // Pick a JSON file
+      // Pick a JSON file - use appropriate initial directory for platform
+      // On Android: point to Downloads folder where exports are saved
+      // On iOS: let the system use default (Documents or iCloud Drive)
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
         allowMultiple: false,
+        initialDirectory: Platform.isAndroid 
+            ? '/storage/emulated/0/Download'
+            : null, // iOS uses system default
       );
 
       if (result == null || result.files.isEmpty) {
