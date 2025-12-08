@@ -1,0 +1,67 @@
+{
+  "version": "1.0",
+  "exportDate": "2025-12-07T00:00:00.000Z",
+  "judges": [
+    {
+      "id": "sample-1",
+      "firstName": "Alice",
+      "lastName": "Anderson",
+      "contactInfo": "alice.anderson@email.com",
+      "notes": "Experienced judge",
+      "isArchived": false,
+      "certifications": [
+        {"association": "NAWGJ", "level": "National"},
+        {"association": "NGA", "level": "Elite"},
+        {"association": "FIG", "level": "FIG Brevet"}
+      ]
+    },
+    {
+      "id": "sample-2",
+      "firstName": "Bob",
+      "lastName": "Baker",
+      "contactInfo": "555-0102",
+      "notes": "Available weekends",
+      "isArchived": false,
+      "certifications": [
+        {"association": "NAWGJ", "level": "Brevet"},
+        {"association": "USAG", "level": "USAG National"}
+      ]
+    },
+    {
+      "id": "sample-3",
+      "firstName": "Carol",
+      "lastName": "Chen",
+      "contactInfo": "carol.chen@email.com",
+      "notes": null,
+      "isArchived": false,
+      "certifications": [
+        {"association": "NGA", "level": "National"},
+        {"association": "AAU", "level": "AAU Level 5"}
+      ]
+    },
+    {
+      "id": "sample-4",
+      "firstName": "David",
+      "lastName": "Davis",
+      "contactInfo": "david.d@email.com",
+      "notes": "Prefers local meets",
+      "isArchived": false,
+      "certifications": [
+        {"association": "NAWGJ", "level": "Ten"},
+        {"association": "USAG", "level": "USAG Regional"}
+      ]
+    },
+    {
+      "id": "sample-5",
+      "firstName": "Emily",
+      "lastName": "Evans",
+      "contactInfo": "555-0105",
+      "notes": null,
+      "isArchived": false,
+      "certifications": [
+        {"association": "NGA", "level": "Regional"},
+        {"association": "AAU", "level": "AAU Level 4"}
+      ]
+    }
+  ]
+}

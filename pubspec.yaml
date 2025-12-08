@@ -28,6 +28,7 @@ dependencies:
   # File Handling & Import/Export
   file_picker: ^8.0.0
   share_plus: ^7.2.1
+  async: ^2.11.0
   
   # Image Handling (Receipts)
   image_picker: ^1.0.4
@@ -61,6 +62,15 @@ dev_dependencies:
   # Code Generation
   build_runner: ^2.4.7
   json_serializable: ^6.7.1
+  flutter_launcher_icons: ^0.14.1
+
+# App icon generation (re-use the existing 1024px iOS icon)
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png"
 
 flutter:
   uses-material-design: true
