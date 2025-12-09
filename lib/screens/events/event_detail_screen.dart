@@ -108,6 +108,14 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           subtitle: 'View reports & export',
           onTap: () => context.push('/reports/event/${widget.eventId}'),
         ),
+        _buildActionCard(
+          icon: Icons.download,
+          title: 'Export Meet',
+          subtitle: 'Download meet data',
+          onTap: () => context.push(
+            '/events/${widget.eventId}/export?meetName=${Uri.encodeComponent(event.name)}',
+          ),
+        ),
       ],
     );
   }

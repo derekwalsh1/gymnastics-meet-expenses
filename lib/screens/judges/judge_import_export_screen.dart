@@ -18,12 +18,16 @@ class _JudgeImportExportScreenState extends ConsumerState<JudgeImportExportScree
   bool _isProcessing = false;
   String? _lastOperationMessage;
   List<String> _lastErrors = [];
+  List<String> _createdNames = [];
+  List<String> _updatedNames = [];
 
   Future<void> _exportJudges() async {
     setState(() {
       _isProcessing = true;
       _lastOperationMessage = null;
       _lastErrors = [];
+      _createdNames = [];
+      _updatedNames = [];
     });
 
     try {
@@ -154,6 +158,8 @@ class _JudgeImportExportScreenState extends ConsumerState<JudgeImportExportScree
         _isProcessing = false;
         _lastOperationMessage = importResult.message;
         _lastErrors = importResult.errors;
+        _createdNames = importResult.createdJudgeNames;
+        _updatedNames = importResult.updatedJudgeNames;
       });
 
       if (importResult.success) {
@@ -187,6 +193,8 @@ class _JudgeImportExportScreenState extends ConsumerState<JudgeImportExportScree
         _isProcessing = false;
         _lastOperationMessage = 'Import failed: ${e.toString()}';
         _lastErrors = [];
+        _createdNames = [];
+        _updatedNames = [];
       });
     }
   }
@@ -385,6 +393,64 @@ class _JudgeImportExportScreenState extends ConsumerState<JudgeImportExportScree
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: Colors.orange.shade900,
+                                        ),
+                                      ),
+                                    )).toList(),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            if (_createdNames.isNotEmpty) ...[
+                              const SizedBox(height: 12),
+                              Text(
+                                'Created (${_createdNames.length}):',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade900,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                constraints: const BoxConstraints(maxHeight: 200),
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: _createdNames.map((name) => Padding(
+                                      padding: const EdgeInsets.only(bottom: 4),
+                                      child: Text(
+                                        '• $name',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.green.shade900,
+                                        ),
+                                      ),
+                                    )).toList(),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            if (_updatedNames.isNotEmpty) ...[
+                              const SizedBox(height: 12),
+                              Text(
+                                'Updated (${_updatedNames.length}):',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blueGrey.shade900,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                constraints: const BoxConstraints(maxHeight: 200),
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: _updatedNames.map((name) => Padding(
+                                      padding: const EdgeInsets.only(bottom: 4),
+                                      child: Text(
+                                        '• $name',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.blueGrey.shade900,
                                         ),
                                       ),
                                     )).toList(),

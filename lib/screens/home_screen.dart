@@ -47,6 +47,12 @@ class HomeScreen extends StatelessWidget {
                     onTap: () => context.push('/events/create'),
                   ),
                   _QuickActionCard(
+                    icon: Icons.upload,
+                    title: 'Import Meet',
+                    subtitle: 'Load from file',
+                    onTap: () => context.push('/import-meet'),
+                  ),
+                  _QuickActionCard(
                     icon: Icons.people,
                     title: 'Judges',
                     subtitle: 'Manage judges',
@@ -57,12 +63,6 @@ class HomeScreen extends StatelessWidget {
                     title: 'Events',
                     subtitle: 'View all events',
                     onTap: () => context.push('/events'),
-                  ),
-                  _QuickActionCard(
-                    icon: Icons.settings,
-                    title: 'Settings',
-                    subtitle: 'App preferences',
-                    onTap: () => context.push('/settings'),
                   ),
                 ],
               ),

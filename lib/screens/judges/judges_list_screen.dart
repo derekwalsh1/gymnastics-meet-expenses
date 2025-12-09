@@ -196,6 +196,8 @@ class _JudgesListScreenState extends ConsumerState<JudgesListScreen> {
 
   void _showFilterDialog(BuildContext context) {
     final judgeLevelsAsync = ref.read(judgeLevelsProvider);
+    final currentAssocFilter = ref.read(judgeAssociationFilterProvider);
+    final currentLevelFilter = ref.read(judgeLevelFilterProvider);
     
     judgeLevelsAsync.whenData((allLevels) {
       // Get unique associations
@@ -207,75 +209,99 @@ class _JudgesListScreenState extends ConsumerState<JudgesListScreen> {
         levelsByAssoc.putIfAbsent(level.association, () => []).add(level);
       }
       
+      final isAllSelected = currentAssocFilter == null && currentLevelFilter == null;
+      
+      // Track temporary filter state in the dialog
+      String? tempAssocFilter = currentAssocFilter;
+      String? tempLevelFilter = currentLevelFilter;
+      
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Filter Judges'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.clear_all),
-                  title: const Text('All Judges'),
-                  onTap: () {
-                    ref.read(judgeAssociationFilterProvider.notifier).state = null;
-                    ref.read(judgeLevelFilterProvider.notifier).state = null;
-                    Navigator.pop(context);
-                  },
-                ),
-                const Divider(),
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    'By Association',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                ...associations.map((assoc) => ListTile(
-                  leading: _AssociationBadge(association: assoc),
-                  title: Text(assoc),
-                  onTap: () {
-                    ref.read(judgeAssociationFilterProvider.notifier).state = assoc;
-                    ref.read(judgeLevelFilterProvider.notifier).state = null;
-                    Navigator.pop(context);
-                  },
-                )),
-                const Divider(),
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    'By Specific Level',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                ...levelsByAssoc.entries.expand((entry) => [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 16, top: 8),
-                    child: Text(
-                      entry.key,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
+        builder: (context) => StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Filter Judges'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.clear_all),
+                      title: const Text('All Judges'),
+                      selected: isAllSelected,
+                      selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                      onTap: () {
+                        ref.read(judgeAssociationFilterProvider.notifier).state = null;
+                        ref.read(judgeLevelFilterProvider.notifier).state = null;
+                        Navigator.pop(context);
+                      },
+                    ),
+                    const Divider(),
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        'By Association',
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
-                  ),
-                  ...entry.value.map((level) => ListTile(
-                    contentPadding: const EdgeInsets.only(left: 32, right: 16),
-                    title: Text(level.level),
-                    subtitle: Text('\$${level.defaultHourlyRate.toStringAsFixed(2)}/hr'),
-                    onTap: () {
-                      ref.read(judgeAssociationFilterProvider.notifier).state = null;
-                      ref.read(judgeLevelFilterProvider.notifier).state = level.id;
-                      Navigator.pop(context);
-                    },
-                  )),
-                ]),
-              ],
-            ),
-          ),
+                    ...associations.map((assoc) {
+                      final isSelected = tempAssocFilter == assoc && tempLevelFilter == null;
+                      return ListTile(
+                        leading: _AssociationBadge(association: assoc),
+                        title: Text(assoc),
+                        selected: isSelected,
+                        selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                        onTap: () {
+                          setDialogState(() {
+                            tempAssocFilter = assoc;
+                            tempLevelFilter = null;
+                          });
+                        },
+                      );
+                    }),
+                    if (tempAssocFilter != null) ...[
+                      const Divider(),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          'By Specific Level - $tempAssocFilter',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      ListTile(
+                        contentPadding: const EdgeInsets.only(left: 32, right: 16),
+                        leading: const Icon(Icons.select_all, size: 20),
+                        title: const Text('All Levels'),
+                        selected: tempAssocFilter != null && tempLevelFilter == null,
+                        selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                        onTap: () {
+                          ref.read(judgeAssociationFilterProvider.notifier).state = tempAssocFilter;
+                          ref.read(judgeLevelFilterProvider.notifier).state = null;
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ...levelsByAssoc[tempAssocFilter]?.map((level) {
+                        final isSelected = tempLevelFilter == level.id;
+                        return ListTile(
+                          contentPadding: const EdgeInsets.only(left: 32, right: 16),
+                          title: Text(level.level),
+                          subtitle: Text('\$${level.defaultHourlyRate.toStringAsFixed(2)}/hr'),
+                          selected: isSelected,
+                          selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                          onTap: () {
+                            ref.read(judgeAssociationFilterProvider.notifier).state = tempAssocFilter;
+                            ref.read(judgeLevelFilterProvider.notifier).state = level.id;
+                            Navigator.pop(context);
+                          },
+                        );
+                      }) ?? [],
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       );
     });
@@ -352,7 +378,8 @@ class _JudgeCard extends StatelessWidget {
         leading: CircleAvatar(
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           child: Text(
-            judge.firstName[0] + judge.lastName[0],
+            (judge.firstName.isNotEmpty ? judge.firstName[0] : '') + 
+            (judge.lastName.isNotEmpty ? judge.lastName[0] : ''),
             style: TextStyle(
               color: Theme.of(context).colorScheme.onPrimaryContainer,
             ),

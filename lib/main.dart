@@ -21,6 +21,9 @@ import 'screens/events/edit_assignment_screen.dart';
 import 'screens/events/add_event_day_screen.dart';
 import 'screens/events/add_event_session_screen.dart';
 import 'screens/events/add_event_floor_screen.dart';
+import 'screens/meets/meet_export_screen.dart';
+import 'screens/meets/meet_import_screen.dart';
+import 'screens/import_meet_screen.dart';
 import 'screens/fees/manage_fees_screen.dart';
 import 'screens/expenses/expense_list_screen.dart';
 import 'screens/expenses/add_edit_expense_screen.dart';
@@ -77,6 +80,10 @@ final _router = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const HomeScreen(),
+    ),
+    GoRoute(
+      path: '/import-meet',
+      builder: (context, state) => const ImportMeetScreen(),
     ),
     GoRoute(
       path: '/judges',
@@ -189,6 +196,21 @@ final _router = GoRouter(
       builder: (context, state) {
         final eventId = state.pathParameters['eventId']!;
         return EventExpensesScreen(eventId: eventId);
+      },
+    ),
+    GoRoute(
+      path: '/events/:eventId/export',
+      builder: (context, state) {
+        final eventId = state.pathParameters['eventId']!;
+        final meetName = state.uri.queryParameters['meetName'] ?? 'Meet';
+        return MeetExportScreen(eventId: eventId, meetName: meetName);
+      },
+    ),
+    GoRoute(
+      path: '/events/:eventId/import',
+      builder: (context, state) {
+        final eventId = state.pathParameters['eventId']!;
+        return MeetImportScreen(eventId: eventId);
       },
     ),
     GoRoute(
