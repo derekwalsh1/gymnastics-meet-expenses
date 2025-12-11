@@ -20,7 +20,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -264,6 +264,11 @@ class DatabaseService {
       await db.execute('CREATE INDEX idx_judge_fees_judgeAssignmentId ON judge_fees(judgeAssignmentId)');
       await db.execute('CREATE INDEX idx_expenses_judgeAssignmentId ON expenses(judgeAssignmentId)');
     }
+
+    if (oldVersion < 5) {
+      // Migration to version 5: apparatus per assignment
+      await db.execute('ALTER TABLE judge_assignments ADD COLUMN apparatus TEXT');
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -382,11 +387,12 @@ class DatabaseService {
       )
     ''');
 
-    // Judge Assignments table (version 4)
+    // Judge Assignments table (version 5: added apparatus)
     await db.execute('''
       CREATE TABLE judge_assignments (
         id TEXT PRIMARY KEY,
         eventFloorId TEXT NOT NULL,
+        apparatus TEXT,
         judgeId TEXT NOT NULL,
         judgeFirstName TEXT NOT NULL,
         judgeLastName TEXT NOT NULL,
@@ -473,8 +479,8 @@ class DatabaseService {
     
     final defaultLevels = [
       // NAWGJ levels
-      {'association': 'NAWGJ', 'level': '6-8', 'rate': 25.0, 'order': 1},
-      {'association': 'NAWGJ', 'level': '4-5', 'rate': 20.0, 'order': 2},
+      {'association': 'NAWGJ', 'level': '4-5', 'rate': 20.0, 'order': 1},
+      {'association': 'NAWGJ', 'level': '6-8', 'rate': 25.0, 'order': 2},
       {'association': 'NAWGJ', 'level': 'Nine', 'rate': 30.0, 'order': 3},
       {'association': 'NAWGJ', 'level': 'Ten', 'rate': 35.0, 'order': 4},
       {'association': 'NAWGJ', 'level': 'Brevet', 'rate': 40.0, 'order': 5},

@@ -21,6 +21,8 @@ import 'screens/events/edit_assignment_screen.dart';
 import 'screens/events/add_event_day_screen.dart';
 import 'screens/events/add_event_session_screen.dart';
 import 'screens/events/add_event_floor_screen.dart';
+import 'screens/events/floor_detail_screen.dart';
+import 'screens/events/floor_apparatus_assign_screen.dart';
 import 'screens/meets/meet_export_screen.dart';
 import 'screens/meets/meet_import_screen.dart';
 import 'screens/import_meet_screen.dart';
@@ -189,6 +191,38 @@ final _router = GoRouter(
         final eventId = state.pathParameters['eventId']!;
         final sessionId = state.pathParameters['sessionId']!;
         return AddEventFloorScreen(eventId: eventId, sessionId: sessionId);
+      },
+    ),
+    GoRoute(
+      path: '/events/:eventId/days/:dayId/sessions/:sessionId/floors/:floorId',
+      builder: (context, state) {
+        final eventId = state.pathParameters['eventId']!;
+        final dayId = state.pathParameters['dayId']!;
+        final sessionId = state.pathParameters['sessionId']!;
+        final floorId = state.pathParameters['floorId']!;
+        return FloorDetailScreen(
+          eventId: eventId,
+          dayId: dayId,
+          sessionId: sessionId,
+          floorId: floorId,
+        );
+      },
+    ),
+    GoRoute(
+      path: '/events/:eventId/days/:dayId/sessions/:sessionId/floors/:floorId/assign-apparatus',
+      builder: (context, state) {
+        final eventId = state.pathParameters['eventId']!;
+        final dayId = state.pathParameters['dayId']!;
+        final sessionId = state.pathParameters['sessionId']!;
+        final floorId = state.pathParameters['floorId']!;
+        final apparatus = state.uri.queryParameters['apparatus']!;
+        return FloorApparatusAssignScreen(
+          eventId: eventId,
+          dayId: dayId,
+          sessionId: sessionId,
+          floorId: floorId,
+          apparatus: apparatus,
+        );
       },
     ),
     GoRoute(

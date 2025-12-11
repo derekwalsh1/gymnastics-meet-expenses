@@ -27,8 +27,6 @@ class EventExpensesScreen extends ConsumerStatefulWidget {
 }
 
 class _EventExpensesScreenState extends ConsumerState<EventExpensesScreen> {
-  String? _expandedJudgeId;
-
   @override
   Widget build(BuildContext context) {
     final eventAsync = ref.watch(eventProvider(widget.eventId));
@@ -113,169 +111,89 @@ class _EventExpensesScreenState extends ConsumerState<EventExpensesScreen> {
       judgeId: judge.judgeId,
       eventId: widget.eventId,
     )));
-    final expensesAsync = ref.watch(expensesByJudgeAndEventProvider((
-      judgeId: judge.judgeId,
-      eventId: widget.eventId,
-    )));
-    final isExpanded = _expandedJudgeId == judge.judgeId;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: () {
-              setState(() {
-                _expandedJudgeId = isExpanded ? null : judge.judgeId;
-              });
-            },
-            borderRadius: BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      child: InkWell(
+        onTap: () {
+          context.push('/expenses?eventId=${widget.eventId}&judgeId=${judge.judgeId}');
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                        child: Text(
-                          judge.judgeFirstName[0] + judge.judgeLastName[0],
-                          style: TextStyle(
+                  CircleAvatar(
+                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                    child: Text(
+                      (judge.judgeFirstName.isNotEmpty ? judge.judgeFirstName[0] : '?') + 
+                      (judge.judgeLastName.isNotEmpty ? judge.judgeLastName[0] : '?'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          judge.judgeFullName,
+                          style: const TextStyle(
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              judge.judgeFullName,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              '${judge.judgeAssociation} - ${judge.judgeLevel}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          '${judge.judgeAssociation} - ${judge.judgeLevel}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
-                      ),
-                      totalAsync.when(
-                        data: (total) => Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              '\$${total.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: total > 0 ? Colors.orange.shade700 : Colors.grey,
-                              ),
-                            ),
-                            const Text(
-                              'expenses',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                        loading: () => const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                        error: (_, __) => const Icon(Icons.error_outline, color: Colors.red),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
-                    ],
+                      ],
+                    ),
                   ),
-                  expensesAsync.when(
-                    data: (expenses) {
-                      if (expenses.isEmpty && !isExpanded) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            'No expenses recorded',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                              fontStyle: FontStyle.italic,
-                            ),
+                  totalAsync.when(
+                    data: (total) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '\$${total.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: total > 0 ? Colors.orange.shade700 : Colors.grey,
                           ),
-                        );
-                      }
-                      if (!isExpanded) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            '${expenses.length} expense${expenses.length != 1 ? 's' : ''} • Tap to expand',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
+                        ),
+                        const Text(
+                          'expenses',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey,
                           ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
+                        ),
+                      ],
+                    ),
+                    loading: () => const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    error: (_, __) => const Icon(Icons.error_outline, color: Colors.red),
                   ),
+                  const SizedBox(width: 8),
+                  Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
                 ],
               ),
-            ),
+            ],
           ),
-          if (isExpanded) ...[
-            const Divider(height: 1),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _generateJudgeInvoice(context, ref, judge),
-                          icon: const Icon(Icons.picture_as_pdf),
-                          label: const Text('Generate Invoice PDF'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          context.push('/expenses?eventId=${widget.eventId}&judgeId=${judge.judgeId}');
-                        },
-                        icon: const Icon(Icons.list),
-                        label: const Text('View All'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey.shade700,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
@@ -329,11 +247,12 @@ class _EventExpensesScreenState extends ConsumerState<EventExpensesScreen> {
 
       // Prepare fee breakdown with enhanced descriptions
       final feeBreakdown = fees.map((fee) {
-        final baseDescription = fee.description.isNotEmpty ? fee.description : '';
         final locationInfo = assignmentInfoMap[fee.judgeAssignmentId] ?? '';
+        // If we have location info (date, session, time, floor), use that as the description
+        // Otherwise fall back to the fee description
         final fullDescription = locationInfo.isNotEmpty
-            ? (baseDescription.isNotEmpty ? '$baseDescription - $locationInfo' : locationInfo)
-            : baseDescription;
+            ? 'Session Fee: $locationInfo'
+            : fee.description;
         
         return {
           'description': fullDescription,

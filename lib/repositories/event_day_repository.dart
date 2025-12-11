@@ -127,9 +127,7 @@ class EventDayRepository {
       eventId: originalDay.eventId,
       dayNumber: nextDayNumber,
       date: newDate,
-      notes: originalDay.notes != null 
-          ? '${originalDay.notes} (cloned)' 
-          : 'Cloned from Day ${originalDay.dayNumber}',
+      notes: originalDay.notes,
       createdAt: now,
       updatedAt: now,
     );

@@ -124,12 +124,10 @@ class EventSessionRepository {
       id: _uuid.v4(),
       eventDayId: targetDayId,
       sessionNumber: nextSessionNumber,
-      name: '${originalSession.name} (cloned)',
+      name: originalSession.name,
       startTime: originalSession.startTime,
       endTime: originalSession.endTime,
-      notes: originalSession.notes != null 
-          ? '${originalSession.notes} (cloned)' 
-          : 'Cloned from Session ${originalSession.sessionNumber}',
+      notes: originalSession.notes,
       createdAt: now,
       updatedAt: now,
     );

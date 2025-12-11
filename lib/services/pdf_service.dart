@@ -11,29 +11,36 @@ class PdfService {
 
   /// Generate a PDF report for an event
   Future<File> generateEventReportPdf(EventReport report) async {
-    final pdf = pw.Document();
+    try {
+      final pdf = pw.Document();
 
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.letter,
-        margin: const pw.EdgeInsets.all(40),
-        build: (pw.Context context) {
-          return [
-            _buildHeader(report),
-            pw.SizedBox(height: 20),
-            _buildFinancialSummary(report),
-            pw.SizedBox(height: 20),
-            _buildJudgeBreakdownTable(report),
-            pw.SizedBox(height: 20),
-            _buildExpenseBreakdown(report),
-            pw.SizedBox(height: 30),
-            _buildFooter(report),
-          ];
-        },
-      ),
-    );
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.letter,
+          margin: const pw.EdgeInsets.all(40),
+          build: (pw.Context context) {
+            return [
+              _buildHeader(report),
+              pw.SizedBox(height: 14),
+              _buildFinancialSummary(report),
+              pw.SizedBox(height: 14),
+              _buildJudgeBreakdownTable(report),
+              pw.SizedBox(height: 14),
+              _buildExpenseBreakdown(report),
+              pw.SizedBox(height: 20),
+              _buildFooter(report),
+            ];
+          },
+        ),
+      );
 
-    return _savePdf(pdf, report);
+      final file = await _savePdf(pdf, report);
+      return file;
+    } on Exception {
+      rethrow;
+    } catch (e) {
+      throw Exception('Unexpected error generating report PDF: $e');
+    }
   }
 
   pw.Widget _buildHeader(EventReport report) {
@@ -162,7 +169,7 @@ class PdfService {
   }
 
   pw.Widget _buildJudgeBreakdownTable(EventReport report) {
-    const judgesPerPage = 20; // Limit to 20 judges per table to avoid too many pages error
+    const judgesPerPage = 30; // Optimized for large meets: 30 judges per table chunk
     final allJudges = report.judgeBreakdowns.values.toList();
     
     return pw.Column(
@@ -171,11 +178,11 @@ class PdfService {
         pw.Text(
           'Judge Breakdown',
           style: pw.TextStyle(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: pw.FontWeight.bold,
           ),
         ),
-        pw.SizedBox(height: 10),
+        pw.SizedBox(height: 6),
         
         // Split judges into chunks to avoid too many table rows
         ...List.generate((allJudges.length / judgesPerPage).ceil(), (chunkIndex) {
@@ -186,9 +193,9 @@ class PdfService {
           
           return pw.Column(
             children: [
-              if (chunkIndex > 0) pw.SizedBox(height: 20),
+              if (chunkIndex > 0) pw.SizedBox(height: 8),
               pw.Table(
-                border: pw.TableBorder.all(color: PdfColors.grey300),
+                border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
                 columnWidths: {
                   0: const pw.FlexColumnWidth(3),
                   1: const pw.FlexColumnWidth(2),
@@ -243,11 +250,11 @@ class PdfService {
 
   pw.Widget _buildTableCell(String text, {bool isHeader = false, bool isBold = false}) {
     return pw.Padding(
-      padding: const pw.EdgeInsets.all(8),
+      padding: const pw.EdgeInsets.all(4),
       child: pw.Text(
         text,
         style: pw.TextStyle(
-          fontSize: isHeader ? 11 : 10,
+          fontSize: isHeader ? 9 : 8,
           fontWeight: (isHeader || isBold) ? pw.FontWeight.bold : pw.FontWeight.normal,
         ),
       ),
@@ -265,13 +272,13 @@ class PdfService {
         pw.Text(
           'Expense Breakdown by Category',
           style: pw.TextStyle(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: pw.FontWeight.bold,
           ),
         ),
-        pw.SizedBox(height: 10),
+        pw.SizedBox(height: 6),
         pw.Table(
-          border: pw.TableBorder.all(color: PdfColors.grey300),
+          border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
           columnWidths: {
             0: const pw.FlexColumnWidth(3),
             1: const pw.FlexColumnWidth(2),
@@ -375,11 +382,27 @@ class PdfService {
   }
 
   Future<File> _savePdf(pw.Document pdf, EventReport report) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final fileName = 'event_report_${report.eventId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
-    final file = File('${directory.path}/$fileName');
-    await file.writeAsBytes(await pdf.save());
-    return file;
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = 'event_report_${report.eventId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final file = File('${directory.path}/$fileName');
+      
+      final pdfBytes = await pdf.save();
+      if (pdfBytes.isEmpty) {
+        throw Exception('PDF byte stream is empty after generation.');
+      }
+      
+      await file.writeAsBytes(pdfBytes);
+      
+      final stat = await file.stat();
+      if (stat.size == 0) {
+        throw Exception('PDF file written but size is 0 bytes.');
+      }
+      
+      return file;
+    } catch (e) {
+      throw Exception('Failed to save PDF: $e');
+    }
   }
 
   /// Generate a PDF invoice for a specific judge
@@ -409,20 +432,20 @@ class PdfService {
               judgeAssociation: judgeAssociation,
               judgeLevel: judgeLevel,
             ),
-            pw.SizedBox(height: 20),
+              pw.SizedBox(height: 14),
             _buildInvoiceEventInfo(
               eventName: eventName,
               eventStartDate: eventStartDate,
               eventEndDate: eventEndDate,
               eventLocation: eventLocation,
             ),
-            pw.SizedBox(height: 20),
+              pw.SizedBox(height: 14),
             _buildInvoiceFeesSection(feeBreakdown, totalFees),
-            pw.SizedBox(height: 20),
+              pw.SizedBox(height: 14),
             _buildInvoiceExpensesSection(expenseBreakdown, totalExpenses),
-            pw.SizedBox(height: 20),
+              pw.SizedBox(height: 14),
             _buildInvoiceTotalSection(totalFees, totalExpenses),
-            pw.SizedBox(height: 30),
+              pw.SizedBox(height: 20),
             _buildInvoiceFooter(),
           ];
         },
@@ -454,7 +477,7 @@ class PdfService {
                     color: PdfColors.blue900,
                   ),
                 ),
-                pw.SizedBox(height: 4),
+                  pw.SizedBox(height: 3),
                 pw.Text(
                   judgeName,
                   style: pw.TextStyle(
@@ -489,7 +512,7 @@ class PdfService {
             ),
           ],
         ),
-        pw.SizedBox(height: 6),
+          pw.SizedBox(height: 4),
         pw.Divider(thickness: 1.5, color: PdfColors.blue900),
       ],
     );
@@ -502,7 +525,7 @@ class PdfService {
     required String eventLocation,
   }) {
     return pw.Container(
-      padding: const pw.EdgeInsets.all(8),
+        padding: const pw.EdgeInsets.all(6),
       decoration: pw.BoxDecoration(
         color: PdfColors.grey200,
         borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
@@ -518,7 +541,7 @@ class PdfService {
               color: PdfColors.blue900,
             ),
           ),
-          pw.SizedBox(height: 4),
+            pw.SizedBox(height: 3),
           pw.Text(
             eventName,
             style: pw.TextStyle(
@@ -552,7 +575,7 @@ class PdfService {
             color: PdfColors.blue900,
           ),
         ),
-        pw.SizedBox(height: 6),
+          pw.SizedBox(height: 4),
         pw.Table(
           border: pw.TableBorder.all(color: PdfColors.grey400),
           columnWidths: {
@@ -564,11 +587,11 @@ class PdfService {
               decoration: const pw.BoxDecoration(color: PdfColors.grey300),
               children: [
                 pw.Padding(
-                  padding: const pw.EdgeInsets.all(5),
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text('Description', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
                 ),
                 pw.Padding(
-                  padding: const pw.EdgeInsets.all(5),
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text('Amount', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9), textAlign: pw.TextAlign.right),
                 ),
               ],
@@ -578,11 +601,11 @@ class PdfService {
               return pw.TableRow(
                 children: [
                   pw.Padding(
-                    padding: const pw.EdgeInsets.all(5),
+                      padding: const pw.EdgeInsets.all(4),
                     child: pw.Text(description, style: const pw.TextStyle(fontSize: 8)),
                   ),
                   pw.Padding(
-                    padding: const pw.EdgeInsets.all(5),
+                      padding: const pw.EdgeInsets.all(4),
                     child: pw.Text('\$${fee['amount'].toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.right),
                   ),
                 ],
@@ -592,11 +615,11 @@ class PdfService {
               decoration: const pw.BoxDecoration(color: PdfColors.grey200),
               children: [
                 pw.Padding(
-                  padding: const pw.EdgeInsets.all(5),
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text('Total Fees', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
                 ),
                 pw.Padding(
-                  padding: const pw.EdgeInsets.all(5),
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text('\$${totalFees.toStringAsFixed(2)}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9), textAlign: pw.TextAlign.right),
                 ),
               ],
@@ -619,7 +642,7 @@ class PdfService {
             color: PdfColors.blue900,
           ),
         ),
-        pw.SizedBox(height: 6),
+          pw.SizedBox(height: 4),
         pw.Table(
           border: pw.TableBorder.all(color: PdfColors.grey400),
           columnWidths: {
@@ -633,19 +656,19 @@ class PdfService {
               decoration: const pw.BoxDecoration(color: PdfColors.grey300),
               children: [
                 pw.Padding(
-                  padding: const pw.EdgeInsets.all(5),
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text('Date', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
                 ),
                 pw.Padding(
-                  padding: const pw.EdgeInsets.all(5),
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text('Category', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
                 ),
                 pw.Padding(
-                  padding: const pw.EdgeInsets.all(5),
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text('Description', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
                 ),
                 pw.Padding(
-                  padding: const pw.EdgeInsets.all(5),
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text('Amount', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9), textAlign: pw.TextAlign.right),
                 ),
               ],
@@ -655,19 +678,19 @@ class PdfService {
               return pw.TableRow(
                 children: [
                   pw.Padding(
-                    padding: const pw.EdgeInsets.all(5),
+                      padding: const pw.EdgeInsets.all(4),
                     child: pw.Text(expense['date'] ?? '', style: const pw.TextStyle(fontSize: 8)),
                   ),
                   pw.Padding(
-                    padding: const pw.EdgeInsets.all(5),
+                      padding: const pw.EdgeInsets.all(4),
                     child: pw.Text(expense['category'] ?? '', style: const pw.TextStyle(fontSize: 8)),
                   ),
                   pw.Padding(
-                    padding: const pw.EdgeInsets.all(5),
+                      padding: const pw.EdgeInsets.all(4),
                     child: pw.Text(description, style: const pw.TextStyle(fontSize: 8)),
                   ),
                   pw.Padding(
-                    padding: const pw.EdgeInsets.all(5),
+                      padding: const pw.EdgeInsets.all(4),
                     child: pw.Text('\$${expense['amount'].toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.right),
                   ),
                 ],
@@ -677,19 +700,19 @@ class PdfService {
               decoration: const pw.BoxDecoration(color: PdfColors.grey200),
               children: [
                 pw.Padding(
-                  padding: const pw.EdgeInsets.all(5),
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text(''),
                 ),
                 pw.Padding(
-                  padding: const pw.EdgeInsets.all(5),
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text(''),
                 ),
                 pw.Padding(
-                  padding: const pw.EdgeInsets.all(5),
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text('Total Expenses', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
                 ),
                 pw.Padding(
-                  padding: const pw.EdgeInsets.all(5),
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text('\$${totalExpenses.toStringAsFixed(2)}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9), textAlign: pw.TextAlign.right),
                 ),
               ],
@@ -704,7 +727,7 @@ class PdfService {
     final grandTotal = totalFees + totalExpenses;
     
     return pw.Container(
-      padding: const pw.EdgeInsets.all(10),
+      padding: const pw.EdgeInsets.all(7),
       decoration: pw.BoxDecoration(
         color: PdfColors.blue50,
         border: pw.Border.all(color: PdfColors.blue900, width: 1.5),
@@ -739,7 +762,7 @@ class PdfService {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Divider(),
-        pw.SizedBox(height: 10),
+          pw.SizedBox(height: 7),
         pw.Text(
           'Please remit payment to the judge listed above.',
           style: pw.TextStyle(

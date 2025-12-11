@@ -6,6 +6,7 @@ part 'judge_assignment.g.dart';
 class JudgeAssignment {
   final String id;
   final String eventFloorId;
+  final String? apparatus; // e.g., Vault, Bars, Beam, Floor, Other
   
   // Judge snapshot data (copied when assigned)
   final String judgeId;
@@ -25,6 +26,7 @@ class JudgeAssignment {
   JudgeAssignment({
     required this.id,
     required this.eventFloorId,
+    this.apparatus,
     required this.judgeId,
     required this.judgeFirstName,
     required this.judgeLastName,
@@ -43,6 +45,7 @@ class JudgeAssignment {
   JudgeAssignment copyWith({
     String? id,
     String? eventFloorId,
+    String? apparatus,
     String? judgeId,
     String? judgeFirstName,
     String? judgeLastName,
@@ -64,6 +67,7 @@ class JudgeAssignment {
       judgeLevel: judgeLevel ?? this.judgeLevel,
       judgeContactInfo: judgeContactInfo ?? this.judgeContactInfo,
       role: role ?? this.role,
+      apparatus: apparatus ?? this.apparatus,
       hourlyRate: hourlyRate ?? this.hourlyRate,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -78,6 +82,7 @@ class JudgeAssignment {
     return {
       'id': id,
       'eventFloorId': eventFloorId,
+      'apparatus': apparatus,
       'judgeId': judgeId,
       'judgeFirstName': judgeFirstName,
       'judgeLastName': judgeLastName,
@@ -102,6 +107,7 @@ class JudgeAssignment {
       judgeLevel: map['judgeLevel'] as String,
       judgeContactInfo: map['judgeContactInfo'] as String?,
       role: map['role'] as String?,
+      apparatus: map['apparatus'] as String?,
       hourlyRate: map['hourlyRate'] as double,
       createdAt: DateTime.parse(map['createdAt'] as String),
       updatedAt: DateTime.parse(map['updatedAt'] as String),

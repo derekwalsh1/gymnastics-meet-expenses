@@ -63,7 +63,20 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Session ${session.sessionNumber}'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Session ${session.sessionNumber}${(session.name != null && session.name!.trim().isNotEmpty) ? ' (${session.name})' : ''}'),
+            const SizedBox(width: 6),
+            IconButton(
+              icon: const Icon(Icons.edit, size: 20),
+              tooltip: 'Edit Session',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () => _showEditSessionDialog(context, session),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.access_time),
@@ -73,6 +86,16 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
             itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit),
+                    SizedBox(width: 8),
+                    Text('Edit Session'),
+                  ],
+                ),
+              ),
               const PopupMenuItem(
                 value: 'clone',
                 child: Row(
@@ -95,7 +118,9 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
               ),
             ],
             onSelected: (value) {
-              if (value == 'clone') {
+              if (value == 'edit') {
+                _showEditSessionDialog(context, session);
+              } else if (value == 'clone') {
                 _cloneSession(context, session);
               } else if (value == 'delete') {
                 _confirmDeleteSession(context, session);
@@ -205,173 +230,97 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
   Widget _buildFloorCard(BuildContext context, EventSession session, EventFloor floor) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.layers, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Floor ${floor.floorNumber}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        floor.name,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Consumer(
-                  builder: (context, ref, child) {
-                    final totalAsync = ref.watch(totalFeesForFloorProvider(floor.id));
-                    return totalAsync.when(
-                      data: (total) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '\$${total.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green.shade700,
-                            ),
-                          ),
-                          Text(
-                            'fees',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      loading: () => const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                      error: (e, stack) => const SizedBox.shrink(),
-                    );
-                  },
-                ),
-                const SizedBox(width: 8),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, size: 20),
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 'clone',
-                      child: Row(
-                        children: [
-                          Icon(Icons.content_copy, size: 18),
-                          SizedBox(width: 8),
-                          Text('Clone Floor'),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete, size: 18, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text('Delete Floor', style: TextStyle(color: Colors.red)),
-                        ],
-                      ),
-                    ),
-                  ],
-                  onSelected: (value) {
-                    if (value == 'clone') {
-                      _cloneFloor(context, session, floor);
-                    } else if (value == 'delete') {
-                      _confirmDeleteFloor(context, session, floor);
-                    }
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const Divider(),
-            const SizedBox(height: 8),
-            // Judge Assignments
-            Consumer(
-              builder: (context, ref, child) {
-                final assignmentsAsync = ref.watch(assignmentsByFloorProvider(floor.id));
-                return assignmentsAsync.when(
-                  data: (assignments) {
-                    if (assignments.isEmpty) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Column(
-                            children: [
-                              const Text(
-                                'No judges assigned',
-                                style: TextStyle(fontSize: 12, color: Colors.grey),
-                              ),
-                              const SizedBox(height: 8),
-                              ElevatedButton.icon(
-                                onPressed: () => _showAssignJudgeDialog(context, session, floor),
-                                icon: const Icon(Icons.person_add, size: 16),
-                                label: const Text('Assign Judge', style: TextStyle(fontSize: 12)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-
-                    return Column(
+      child: InkWell(
+        onTap: () => context.push('/events/${widget.eventId}/days/${widget.dayId}/sessions/${widget.sessionId}/floors/${floor.id}'),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.layers, color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Assigned Judges (${assignments.length})',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey,
-                              ),
+                              'Floor ${floor.floorNumber}${(floor.name.trim().isNotEmpty) ? ' (${floor.name})' : ''}',
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
-                            const Spacer(),
-                            TextButton.icon(
-                              onPressed: () => _showAssignJudgeDialog(context, session, floor),
-                              icon: const Icon(Icons.person_add, size: 14),
-                              label: const Text('Add', style: TextStyle(fontSize: 11)),
+                            const SizedBox(width: 6),
+                            IconButton(
+                              icon: const Icon(Icons.edit, size: 18),
+                              tooltip: 'Edit Floor',
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () => _showEditFloorDialog(context, session, floor),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        ...assignments.map((assignment) => _buildJudgeCard(context, assignment, session, floor)),
                       ],
-                    );
-                  },
-                  loading: () => const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Center(child: CircularProgressIndicator()),
+                    ),
                   ),
-                  error: (error, stack) => Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text('Error: $error'),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final totalAsync = ref.watch(totalFeesForFloorProvider(floor.id));
+                      return totalAsync.when(
+                        data: (total) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '\$${total.toStringAsFixed(2)}',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green.shade700),
+                            ),
+                            Text('fees', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                          ],
+                        ),
+                        loading: () => const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        error: (e, stack) => const SizedBox.shrink(),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-          ],
+                  const SizedBox(width: 8),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, size: 20),
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Row(children: [Icon(Icons.edit, size: 18), SizedBox(width: 8), Text('Edit Floor')]),
+                      ),
+                      PopupMenuItem(
+                        value: 'clone',
+                        child: Row(children: [Icon(Icons.content_copy, size: 18), SizedBox(width: 8), Text('Clone Floor')]),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(children: [Icon(Icons.delete, size: 18, color: Colors.red), SizedBox(width: 8), Text('Delete Floor', style: TextStyle(color: Colors.red))]),
+                      ),
+                    ],
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        _showEditFloorDialog(context, session, floor);
+                      } else if (value == 'clone') {
+                        _cloneFloor(context, session, floor);
+                      } else if (value == 'delete') {
+                        _confirmDeleteFloor(context, session, floor);
+                      }
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Floor card ends here; assignments are intentionally hidden in this view.
+            ],
+          ),
         ),
       ),
     );
@@ -391,12 +340,19 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
       elevation: 1,
       child: ListTile(
         dense: true,
-        leading: CircleAvatar(
-          backgroundColor: Colors.blue,
-          child: Text(
-            assignment.judgeFirstName[0] + assignment.judgeLastName[0],
-            style: const TextStyle(color: Colors.white, fontSize: 12),
-          ),
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(_apparatusIcon(assignment.apparatus), color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 6),
+            CircleAvatar(
+              backgroundColor: Colors.blue,
+              child: Text(
+                assignment.judgeFirstName[0] + assignment.judgeLastName[0],
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ),
+          ],
         ),
         title: Row(
           children: [
@@ -426,7 +382,7 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${assignment.judgeAssociation} - ${assignment.judgeLevel}${assignment.role != null ? ' (${assignment.role})' : ''}',
+              '${assignment.judgeAssociation} - ${assignment.judgeLevel}${assignment.role != null ? ' (${assignment.role})' : ''}${assignment.apparatus != null ? ' • ${assignment.apparatus}' : ''}',
               style: const TextStyle(fontSize: 11),
             ),
             const SizedBox(height: 4),
@@ -463,6 +419,21 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
         isThreeLine: true,
       ),
     );
+  }
+
+  IconData _apparatusIcon(String? apparatus) {
+    switch (apparatus) {
+      case 'Vault':
+        return Icons.sports_gymnastics;
+      case 'Bars':
+        return Icons.hardware;
+      case 'Beam':
+        return Icons.stacked_line_chart;
+      case 'Floor':
+        return Icons.view_comfy;
+      default:
+        return Icons.category;
+    }
   }
 
   void _showAddFloorDialog(BuildContext context, EventSession session, int floorCount) {
@@ -613,6 +584,43 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
     }
   }
 
+  Future<void> _showEditSessionDialog(BuildContext context, EventSession session) async {
+    final result = await showDialog<Map<String, String>?>(
+      context: context,
+      builder: (context) {
+        return _EditSessionDialog(initialName: session.name, initialNotes: session.notes ?? '');
+      },
+    );
+
+    if (result != null && context.mounted) {
+      try {
+        final updated = session.copyWith(
+          name: result['name']!,
+          notes: result['notes']!.isEmpty ? null : result['notes'],
+          updatedAt: DateTime.now(),
+        );
+        
+        await EventSessionRepository().updateEventSession(updated);
+        ref.invalidate(eventProvider(widget.eventId));
+        
+        if (mounted) {
+          setState(() {
+            _refreshKey++;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Session updated')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error updating session: $e')),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _cloneSession(BuildContext context, EventSession session) async {
     bool includeJudges = true;
 
@@ -678,6 +686,43 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error cloning session: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _showEditFloorDialog(BuildContext context, EventSession session, EventFloor floor) async {
+    final result = await showDialog<Map<String, String>?>(
+      context: context,
+      builder: (context) {
+        return _EditFloorDialog(initialName: floor.name, initialNotes: floor.notes ?? '');
+      },
+    );
+
+    if (result != null && context.mounted) {
+      try {
+        final updated = floor.copyWith(
+          name: result['name']!,
+          notes: result['notes']!.isEmpty ? null : result['notes'],
+          updatedAt: DateTime.now(),
+        );
+        
+        await EventFloorRepository().updateEventFloor(updated);
+        ref.invalidate(eventProvider(widget.eventId));
+        
+        if (mounted) {
+          setState(() {
+            _refreshKey++;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Floor updated')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error updating floor: $e')),
           );
         }
       }
@@ -891,5 +936,163 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
         }
       }
     }
+  }
+}
+
+class _EditSessionDialog extends StatefulWidget {
+  final String initialName;
+  final String initialNotes;
+
+  const _EditSessionDialog({required this.initialName, required this.initialNotes});
+
+  @override
+  State<_EditSessionDialog> createState() => _EditSessionDialogState();
+}
+
+class _EditSessionDialogState extends State<_EditSessionDialog> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _notesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName);
+    _notesController = TextEditingController(text: widget.initialNotes);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Edit Session'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(
+              labelText: 'Session Name',
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _notesController,
+            decoration: const InputDecoration(
+              labelText: 'Notes (Optional)',
+              border: OutlineInputBorder(),
+            ),
+            maxLines: 3,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () {
+            if (_nameController.text.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Session name is required')),
+              );
+              return;
+            }
+            Navigator.pop(context, {
+              'name': _nameController.text,
+              'notes': _notesController.text,
+            });
+          },
+          child: const Text('Save'),
+        ),
+      ],
+    );
+  }
+}
+
+class _EditFloorDialog extends StatefulWidget {
+  final String initialName;
+  final String initialNotes;
+
+  const _EditFloorDialog({required this.initialName, required this.initialNotes});
+
+  @override
+  State<_EditFloorDialog> createState() => _EditFloorDialogState();
+}
+
+class _EditFloorDialogState extends State<_EditFloorDialog> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _notesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName);
+    _notesController = TextEditingController(text: widget.initialNotes);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Edit Floor'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(
+              labelText: 'Floor Name',
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _notesController,
+            decoration: const InputDecoration(
+              labelText: 'Notes (Optional)',
+              border: OutlineInputBorder(),
+            ),
+            maxLines: 3,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () {
+            if (_nameController.text.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Floor name is required')),
+              );
+              return;
+            }
+            Navigator.pop(context, {
+              'name': _nameController.text,
+              'notes': _notesController.text,
+            });
+          },
+          child: const Text('Save'),
+        ),
+      ],
+    );
   }
 }

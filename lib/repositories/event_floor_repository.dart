@@ -145,9 +145,7 @@ class EventFloorRepository {
       eventSessionId: targetSessionId,
       floorNumber: nextFloorNumber,
       name: originalFloor.name,
-      notes: originalFloor.notes != null 
-          ? '${originalFloor.notes} (cloned)' 
-          : 'Cloned from Floor ${originalFloor.floorNumber}',
+      notes: originalFloor.notes,
       createdAt: now,
       updatedAt: now,
     );

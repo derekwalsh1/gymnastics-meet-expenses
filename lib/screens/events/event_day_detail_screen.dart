@@ -51,6 +51,60 @@ class _EventDayDetailScreenState extends ConsumerState<EventDayDetailScreen> {
     );
   }
 
+  Future<void> _showInlineEditSessionDialog(BuildContext context, EventSession session) async {
+    String name = session.name ?? '';
+    String notes = session.notes ?? '';
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            return AlertDialog(
+              title: const Text('Edit Session'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      decoration: const InputDecoration(labelText: 'Name'),
+                      controller: TextEditingController(text: name),
+                      onChanged: (v) => name = v,
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      decoration: const InputDecoration(labelText: 'Notes'),
+                      controller: TextEditingController(text: notes),
+                      maxLines: 3,
+                      onChanged: (v) => notes = v,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final updated = session.copyWith(name: name.trim().isEmpty ? null : name.trim(), notes: notes.trim().isEmpty ? null : notes.trim());
+                    await EventSessionRepository().updateEventSession(updated);
+                    setState(() {
+                      _refreshKey++;
+                    });
+                    if (mounted) Navigator.of(ctx).pop();
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildDayDetail(BuildContext context, EventDay day) {
     final dateFormat = DateFormat('EEEE, MMMM d, yyyy');
 
@@ -61,6 +115,16 @@ class _EventDayDetailScreenState extends ConsumerState<EventDayDetailScreen> {
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
             itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit),
+                    SizedBox(width: 8),
+                    Text('Edit Notes'),
+                  ],
+                ),
+              ),
               const PopupMenuItem(
                 value: 'clone',
                 child: Row(
@@ -83,7 +147,9 @@ class _EventDayDetailScreenState extends ConsumerState<EventDayDetailScreen> {
               ),
             ],
             onSelected: (value) {
-              if (value == 'clone') {
+              if (value == 'edit') {
+                _showEditDayDialog(context, ref, day);
+              } else if (value == 'clone') {
                 _showCloneDayDialog(context, ref, day);
               } else if (value == 'delete') {
                 _confirmDeleteDay(context, ref, day);
@@ -210,12 +276,25 @@ class _EventDayDetailScreenState extends ConsumerState<EventDayDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Session ${session.sessionNumber}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Session ${session.sessionNumber}${(session.name != null && session.name!.trim().isNotEmpty) ? ' (${session.name})' : ''}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        IconButton(
+                          icon: const Icon(Icons.edit, size: 18),
+                          tooltip: 'Edit Session',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () => _showInlineEditSessionDialog(context, session),
+                        ),
+                      ],
                     ),
                     Text(
                       '${timeFormat.format(startTime)} - ${timeFormat.format(endTime)}',
@@ -390,6 +469,42 @@ class _EventDayDetailScreenState extends ConsumerState<EventDayDetailScreen> {
     }
   }
 
+  Future<void> _showEditDayDialog(BuildContext context, WidgetRef ref, EventDay day) async {
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (context) {
+        return _EditDayNotesDialog(initialNotes: day.notes ?? '');
+      },
+    );
+
+    if (result != null && context.mounted) {
+      try {
+        final updated = day.copyWith(
+          notes: result.isEmpty ? null : result,
+          updatedAt: DateTime.now(),
+        );
+        
+        await EventDayRepository().updateEventDay(updated);
+        ref.invalidate(eventProvider(widget.eventId));
+        
+        if (mounted) {
+          setState(() {
+            _refreshKey++;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Day notes updated')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error updating day: $e')),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _showCloneDayDialog(BuildContext context, WidgetRef ref, EventDay day) async {
     DateTime selectedDate = day.date.add(const Duration(days: 1));
     bool includeJudges = true;
@@ -557,5 +672,57 @@ class _EventDayDetailScreenState extends ConsumerState<EventDayDetailScreen> {
         }
       }
     }
+  }
+}
+
+class _EditDayNotesDialog extends StatefulWidget {
+  final String initialNotes;
+
+  const _EditDayNotesDialog({required this.initialNotes});
+
+  @override
+  State<_EditDayNotesDialog> createState() => _EditDayNotesDialogState();
+}
+
+class _EditDayNotesDialogState extends State<_EditDayNotesDialog> {
+  late final TextEditingController _notesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _notesController = TextEditingController(text: widget.initialNotes);
+  }
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Edit Day Notes'),
+      content: TextField(
+        controller: _notesController,
+        decoration: const InputDecoration(
+          labelText: 'Notes',
+          hintText: 'Optional notes for this day',
+          border: OutlineInputBorder(),
+        ),
+        maxLines: 3,
+        autofocus: true,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _notesController.text),
+          child: const Text('Save'),
+        ),
+      ],
+    );
   }
 }

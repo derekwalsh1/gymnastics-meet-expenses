@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../models/event_report.dart';
 import '../../models/event.dart';
@@ -460,23 +461,79 @@ class _EventReportDetailScreenState extends ConsumerState<EventReportDetailScree
 
   Future<void> _handlePdfExport(BuildContext context, EventReport report) async {
     try {
-      ScaffoldMessenger.of(context).showSnackBar(
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      scaffoldMessenger.showSnackBar(
         const SnackBar(content: Text('Generating PDF...')),
       );
 
-      final pdfService = PdfService();
-      final file = await pdfService.generateEventReportPdf(report);
+      print('[PDF] Starting PDF generation for ${report.eventName}');
 
-      final box = context.findRenderObject() as RenderBox?;
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: 'Event Financial Report - ${report.eventName}',
-        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+      // Run PDF generation on background thread to avoid blocking UI
+      final pdfService = PdfService();
+      final file = await Future(() async {
+        return await pdfService.generateEventReportPdf(report);
+      }).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw Exception('PDF generation timed out after 30 seconds'),
       );
-    } catch (e) {
+
+      print('[PDF] PDF file created: ${file.path}');
+
+      // Verify file exists and has content
+      final stat = await file.stat();
+      print('[PDF] File size: ${stat.size} bytes (${(stat.size / 1024 / 1024).toStringAsFixed(1)} MB)');
+      
+      if (stat.size <= 0) {
+        throw Exception('Generated PDF file is empty.');
+      }
+
+      if (!context.mounted) return;
+      scaffoldMessenger.hideCurrentSnackBar();
+      scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('PDF ready (${(stat.size / 1024 / 1024).toStringAsFixed(1)} MB). Attempting to share...')),
+      );
+
+      // Brief delay to show the success message
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      if (!context.mounted) return;
+
+      print('[PDF] Attempting Share.shareXFiles...');
+
+      // Try to open share sheet
+      final box = context.findRenderObject() as RenderBox?;
+      print('[PDF] RenderBox: ${box != null ? "available" : "null"}');
+      
+      try {
+        await Share.shareXFiles(
+          [XFile(file.path)],
+          subject: 'Event Financial Report - ${report.eventName}',
+          sharePositionOrigin: box != null ? box.localToGlobal(Offset.zero) & box.size : null,
+        );
+        print('[PDF] Share completed (user may have cancelled or saved)');
+      } catch (shareError) {
+        print('[PDF] Share error: $shareError');
+        rethrow;
+      }
+
+      // After share attempt, show file location for reference
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error generating PDF: $e')),
+          SnackBar(
+            content: Text('PDF saved to:\n${file.path}'),
+            duration: const Duration(seconds: 6),
+          ),
+        );
+      }
+    } catch (e) {
+      print('[PDF] Export error: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            duration: const Duration(seconds: 5),
+          ),
         );
       }
     }
@@ -591,11 +648,12 @@ class _EventReportDetailScreenState extends ConsumerState<EventReportDetailScree
 
       // Prepare fee breakdown with enhanced descriptions
       final feeBreakdown = fees.map((fee) {
-        final baseDescription = fee.description.isNotEmpty ? fee.description : '';
         final locationInfo = assignmentInfoMap[fee.judgeAssignmentId] ?? '';
+        // If we have location info (date, session, time, floor), use that as the description
+        // Otherwise fall back to the fee description
         final fullDescription = locationInfo.isNotEmpty
-            ? (baseDescription.isNotEmpty ? '$baseDescription - $locationInfo' : locationInfo)
-            : baseDescription;
+            ? 'Session Fee: $locationInfo'
+            : fee.description;
         
         return {
           'description': fullDescription,
@@ -687,8 +745,28 @@ class _EventReportDetailScreenState extends ConsumerState<EventReportDetailScree
   ) async {
     try {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Generating combined invoices...')),
+      
+      // Show loading dialog to keep UI responsive
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Generating PDF'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              const Text('Creating combined invoices...'),
+              const SizedBox(height: 8),
+              Text(
+                '${report.judgeBreakdowns.length} judges',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
       );
 
       // Get event
@@ -816,38 +894,71 @@ class _EventReportDetailScreenState extends ConsumerState<EventReportDetailScree
 
       // Generate combined PDF
       final pdfService = PdfService();
-      final file = await pdfService.generateCombinedInvoicesPdf(
-        eventName: event.name,
-        eventStartDate: event.startDate,
-        eventEndDate: event.endDate,
-        eventLocation: '${event.location.city}, ${event.location.state}',
-        totalFees: report.totalFees,
-        totalExpenses: report.totalExpenses,
-        judgeInvoices: judgeInvoices,
-        report: report,
-        eventStructure: eventStructure,
+      print('[COMBINED] Starting PDF generation with ${judgeInvoices.length} judges');
+      
+      final file = await Future(() async {
+        return await pdfService.generateCombinedInvoicesPdf(
+          eventName: event.name,
+          eventStartDate: event.startDate,
+          eventEndDate: event.endDate,
+          eventLocation: '${event.location.city}, ${event.location.state}',
+          totalFees: report.totalFees,
+          totalExpenses: report.totalExpenses,
+          judgeInvoices: judgeInvoices,
+          report: report,
+          eventStructure: eventStructure,
+        );
+      }).timeout(
+        const Duration(seconds: 60),
+        onTimeout: () => throw Exception('Combined PDF generation timed out after 60 seconds'),
       );
+
+      print('[COMBINED] PDF file created: ${file.path}');
+      final stat = await file.stat();
+      print('[COMBINED] File size: ${stat.size} bytes (${(stat.size / 1024 / 1024).toStringAsFixed(1)} MB)');
+
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('PDF ready (${(stat.size / 1024 / 1024).toStringAsFixed(1)} MB). Sharing...')),
+      );
+
+      await Future.delayed(const Duration(milliseconds: 300));
 
       if (!context.mounted) return;
 
-      // Share the PDF
-      final box = context.findRenderObject() as RenderBox?;
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: 'Combined Invoices - ${event.name}',
-        text: 'Combined invoices for all judges',
-        sharePositionOrigin: box != null 
-            ? box.localToGlobal(Offset.zero) & box.size 
-            : null,
-      );
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Generated ${judgeInvoices.length} invoices successfully')),
-        );
+      print('[COMBINED] Attempting to open PDF for printing/sharing...');
+      
+      if (!context.mounted) return;
+      // Close loading dialog
+      Navigator.of(context).pop();
+      
+      // Use Printing.sharePdf which works reliably on all platforms including simulator
+      try {
+        final pdfBytes = await file.readAsBytes();
+        if (context.mounted) {
+          await Printing.sharePdf(
+            bytes: pdfBytes,
+            filename: 'combined_invoices_${event.name}.pdf',
+          );
+          print('[COMBINED] PDF opened for printing/sharing');
+        }
+      } catch (printError) {
+        print('[COMBINED] Printing open error: $printError');
+        // If that fails, just show the file path
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('PDF saved: ${file.path}'),
+              duration: const Duration(seconds: 6),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (context.mounted) {
+        // Close loading dialog if still open
+        Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error generating combined invoices: $e')),
         );

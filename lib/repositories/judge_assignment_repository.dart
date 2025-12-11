@@ -17,6 +17,7 @@ class JudgeAssignmentRepository {
     required JudgeWithLevels judge,
     required String association,
     String? role,
+    String? apparatus,
     double? customHourlyRate,
   }) async {
     final db = await _dbService.database;
@@ -32,6 +33,7 @@ class JudgeAssignmentRepository {
     final assignment = JudgeAssignment(
       id: _uuid.v4(),
       eventFloorId: eventFloorId,
+      apparatus: apparatus,
       judgeId: judge.judge.id,
       judgeFirstName: judge.judge.firstName,
       judgeLastName: judge.judge.lastName,
@@ -369,6 +371,7 @@ class JudgeAssignmentRepository {
     final newAssignment = JudgeAssignment(
       id: _uuid.v4(),
       eventFloorId: newEventFloorId,
+      apparatus: originalAssignment.apparatus,
       judgeId: originalAssignment.judgeId,
       judgeFirstName: originalAssignment.judgeFirstName,
       judgeLastName: originalAssignment.judgeLastName,

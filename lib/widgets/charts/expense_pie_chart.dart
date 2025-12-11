@@ -28,10 +28,13 @@ class _ExpensePieChartState extends State<ExpensePieChart> {
       );
     }
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final chartSize = screenWidth > 600 ? 400.0 : screenWidth * 0.8;
+    
     return Column(
       children: [
-        AspectRatio(
-          aspectRatio: 1.3,
+        SizedBox(
+          height: chartSize,
           child: PieChart(
             PieChartData(
               pieTouchData: PieTouchData(
@@ -50,12 +53,12 @@ class _ExpensePieChartState extends State<ExpensePieChart> {
               ),
               borderData: FlBorderData(show: false),
               sectionsSpace: 2,
-              centerSpaceRadius: 40,
+              centerSpaceRadius: 60,
               sections: _getSections(),
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
         _buildLegend(),
       ],
     );
@@ -69,8 +72,8 @@ class _ExpensePieChartState extends State<ExpensePieChart> {
       final index = entry.key;
       final categoryEntry = entry.value;
       final isTouched = index == touchedIndex;
-      final fontSize = isTouched ? 16.0 : 12.0;
-      final radius = isTouched ? 60.0 : 50.0;
+      final fontSize = isTouched ? 18.0 : 14.0;
+      final radius = isTouched ? 80.0 : 70.0;
       final percentage = (categoryEntry.value / total * 100).toStringAsFixed(1);
 
       return PieChartSectionData(

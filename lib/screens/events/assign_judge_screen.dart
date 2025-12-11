@@ -33,6 +33,7 @@ class AssignJudgeScreen extends ConsumerStatefulWidget {
 class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
   final Set<String> selectedJudgeIds = {};
   String? selectedRole;
+  String? selectedApparatus;
   double? customHourlyRate;
   final TextEditingController _rateController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -358,6 +359,28 @@ class _AssignJudgeScreenState extends ConsumerState<AssignJudgeScreen> {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            decoration: const InputDecoration(
+              labelText: 'Apparatus',
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+            value: selectedApparatus,
+            items: const [
+              DropdownMenuItem(value: 'Vault', child: Text('Vault')),
+              DropdownMenuItem(value: 'Bars', child: Text('Uneven Bars')),
+              DropdownMenuItem(value: 'Beam', child: Text('Balance Beam')),
+              DropdownMenuItem(value: 'Floor', child: Text('Floor Exercise')),
+              DropdownMenuItem(value: 'Other', child: Text('Other / Pod')),
+            ],
+            onChanged: (value) {
+              setState(() {
+                selectedApparatus = value;
+              });
+            },
+            validator: (v) => v == null ? 'Select an apparatus' : null,
+          ),
+          const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             decoration: const InputDecoration(
               labelText: 'Role (Optional)',
