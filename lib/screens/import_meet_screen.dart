@@ -62,6 +62,7 @@ class _ImportMeetScreenState extends ConsumerState<ImportMeetScreen> {
         ref.invalidate(eventsProvider);
         ref.invalidate(upcomingEventsProvider);
         ref.invalidate(pastEventsProvider);
+        ref.invalidate(filteredEventsProvider);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
