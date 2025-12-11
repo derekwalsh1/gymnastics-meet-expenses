@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/event_session.dart';
 import '../services/database_service.dart';
+import 'event_floor_repository.dart';
 
 class EventSessionRepository {
   final DatabaseService _dbService = DatabaseService.instance;
@@ -91,6 +92,63 @@ class EventSessionRepository {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  // Clone a session with all its floors and judge assignments
+  Future<EventSession> cloneEventSession({
+    required String eventSessionId,
+    String? newEventDayId,
+    bool includeJudgeAssignments = true,
+  }) async {
+    final db = await _dbService.database;
+    
+    // Get the original session
+    final originalSession = await getEventSessionById(eventSessionId);
+    if (originalSession == null) {
+      throw Exception('Event session not found');
+    }
+
+    // Use the same day if not specified
+    final targetDayId = newEventDayId ?? originalSession.eventDayId;
+
+    // Get the next session number for this day
+    final existingSessions = await getEventSessionsByDayId(targetDayId);
+    final nextSessionNumber = existingSessions.isEmpty 
+        ? 1 
+        : existingSessions.map((s) => s.sessionNumber).reduce((a, b) => a > b ? a : b) + 1;
+
+    final now = DateTime.now();
+    
+    // Create the new session
+    final newSession = EventSession(
+      id: _uuid.v4(),
+      eventDayId: targetDayId,
+      sessionNumber: nextSessionNumber,
+      name: '${originalSession.name} (cloned)',
+      startTime: originalSession.startTime,
+      endTime: originalSession.endTime,
+      notes: originalSession.notes != null 
+          ? '${originalSession.notes} (cloned)' 
+          : 'Cloned from Session ${originalSession.sessionNumber}',
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    await db.insert('event_sessions', newSession.toMap());
+
+    // Clone all floors
+    final floorRepo = EventFloorRepository();
+    final floors = await floorRepo.getEventFloorsBySessionId(eventSessionId);
+    
+    for (final floor in floors) {
+      await floorRepo.cloneEventFloor(
+        eventFloorId: floor.id,
+        newEventSessionId: newSession.id,
+        includeJudgeAssignments: includeJudgeAssignments,
+      );
+    }
+
+    return newSession;
   }
 
   // Helper methods

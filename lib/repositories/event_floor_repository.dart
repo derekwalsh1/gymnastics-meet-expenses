@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 import '../models/event_floor.dart';
 import '../services/database_service.dart';
+import 'judge_assignment_repository.dart';
 
 class EventFloorRepository {
   final DatabaseService _dbService = DatabaseService.instance;
@@ -111,5 +112,61 @@ class EventFloorRepository {
     ''', [eventId]);
 
     return maps.map((map) => EventFloor.fromMap(map)).toList();
+  }
+
+  // Clone a floor with its judge assignment
+  Future<EventFloor> cloneEventFloor({
+    required String eventFloorId,
+    String? newEventSessionId,
+    bool includeJudgeAssignments = true,
+  }) async {
+    final db = await _dbService.database;
+    
+    // Get the original floor
+    final originalFloor = await getEventFloorById(eventFloorId);
+    if (originalFloor == null) {
+      throw Exception('Event floor not found');
+    }
+
+    // Use the same session if not specified
+    final targetSessionId = newEventSessionId ?? originalFloor.eventSessionId;
+
+    // Get the next floor number for this session
+    final existingFloors = await getEventFloorsBySessionId(targetSessionId);
+    final nextFloorNumber = existingFloors.isEmpty 
+        ? 1 
+        : existingFloors.map((f) => f.floorNumber).reduce((a, b) => a > b ? a : b) + 1;
+
+    final now = DateTime.now();
+    
+    // Create the new floor
+    final newFloor = EventFloor(
+      id: _uuid.v4(),
+      eventSessionId: targetSessionId,
+      floorNumber: nextFloorNumber,
+      name: originalFloor.name,
+      notes: originalFloor.notes != null 
+          ? '${originalFloor.notes} (cloned)' 
+          : 'Cloned from Floor ${originalFloor.floorNumber}',
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    await db.insert('event_floors', newFloor.toMap());
+
+    // Clone judge assignment if requested
+    if (includeJudgeAssignments) {
+      final assignmentRepo = JudgeAssignmentRepository();
+      final assignments = await assignmentRepo.getAssignmentsByFloorId(eventFloorId);
+      
+      for (final assignment in assignments) {
+        await assignmentRepo.cloneAssignment(
+          assignmentId: assignment.id,
+          newEventFloorId: newFloor.id,
+        );
+      }
+    }
+
+    return newFloor;
   }
 }

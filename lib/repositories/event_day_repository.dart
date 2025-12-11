@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 import '../models/event_day.dart';
 import '../services/database_service.dart';
+import 'event_session_repository.dart';
 
 class EventDayRepository {
   final DatabaseService _dbService = DatabaseService.instance;
@@ -96,5 +97,57 @@ class EventDayRepository {
       [eventId],
     );
     return result.first['count'] as int;
+  }
+
+  // Clone a day with all its sessions, floors, and judge assignments
+  Future<EventDay> cloneEventDay({
+    required String eventDayId,
+    required DateTime newDate,
+    bool includeJudgeAssignments = true,
+  }) async {
+    final db = await _dbService.database;
+    
+    // Get the original day
+    final originalDay = await getEventDayById(eventDayId);
+    if (originalDay == null) {
+      throw Exception('Event day not found');
+    }
+
+    // Get the next day number for this event
+    final existingDays = await getEventDaysByEventId(originalDay.eventId);
+    final nextDayNumber = existingDays.isEmpty 
+        ? 1 
+        : existingDays.map((d) => d.dayNumber).reduce((a, b) => a > b ? a : b) + 1;
+
+    final now = DateTime.now();
+    
+    // Create the new day
+    final newDay = EventDay(
+      id: _uuid.v4(),
+      eventId: originalDay.eventId,
+      dayNumber: nextDayNumber,
+      date: newDate,
+      notes: originalDay.notes != null 
+          ? '${originalDay.notes} (cloned)' 
+          : 'Cloned from Day ${originalDay.dayNumber}',
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    await db.insert('event_days', newDay.toMap());
+
+    // Clone all sessions
+    final sessionRepo = EventSessionRepository();
+    final sessions = await sessionRepo.getEventSessionsByDayId(eventDayId);
+    
+    for (final session in sessions) {
+      await sessionRepo.cloneEventSession(
+        eventSessionId: session.id,
+        newEventDayId: newDay.id,
+        includeJudgeAssignments: includeJudgeAssignments,
+      );
+    }
+
+    return newDay;
   }
 }

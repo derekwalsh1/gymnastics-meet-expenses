@@ -66,8 +66,41 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
         title: Text('Session ${session.sessionNumber}'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () => _confirmDeleteSession(context, session),
+            icon: const Icon(Icons.access_time),
+            tooltip: 'Edit time',
+            onPressed: () => _editSessionTimes(context, session),
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'clone',
+                child: Row(
+                  children: [
+                    Icon(Icons.content_copy),
+                    SizedBox(width: 8),
+                    Text('Clone Session'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Delete Session', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            ],
+            onSelected: (value) {
+              if (value == 'clone') {
+                _cloneSession(context, session);
+              } else if (value == 'delete') {
+                _confirmDeleteSession(context, session);
+              }
+            },
           ),
         ],
       ),
@@ -236,9 +269,37 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
                   },
                 ),
                 const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.delete, size: 20),
-                  onPressed: () => _confirmDeleteFloor(context, session, floor),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, size: 20),
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'clone',
+                      child: Row(
+                        children: [
+                          Icon(Icons.content_copy, size: 18),
+                          SizedBox(width: 8),
+                          Text('Clone Floor'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete, size: 18, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('Delete Floor', style: TextStyle(color: Colors.red)),
+                        ],
+                      ),
+                    ),
+                  ],
+                  onSelected: (value) {
+                    if (value == 'clone') {
+                      _cloneFloor(context, session, floor);
+                    } else if (value == 'delete') {
+                      _confirmDeleteFloor(context, session, floor);
+                    }
+                  },
                 ),
               ],
             ),
@@ -546,6 +607,286 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error removing judge: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _cloneSession(BuildContext context, EventSession session) async {
+    bool includeJudges = true;
+
+    final result = await showDialog<bool?>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Clone Session'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'This will create a copy of Session ${session.sessionNumber} with all its floors.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  CheckboxListTile(
+                    title: const Text('Include judge assignments'),
+                    value: includeJudges,
+                    onChanged: (value) {
+                      setState(() {
+                        includeJudges = value ?? true;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, includeJudges),
+                  child: const Text('Clone Session'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null && context.mounted) {
+      try {
+        await EventSessionRepository().cloneEventSession(
+          eventSessionId: session.id,
+          includeJudgeAssignments: result,
+        );
+        
+        ref.invalidate(eventProvider(widget.eventId));
+        
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Session cloned successfully')),
+          );
+          context.pop(); // Return to day screen
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error cloning session: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _cloneFloor(BuildContext context, EventSession session, EventFloor floor) async {
+    bool includeJudges = true;
+
+    final result = await showDialog<bool?>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Clone Floor'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'This will create a copy of Floor ${floor.floorNumber} (${floor.name}).',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  CheckboxListTile(
+                    title: const Text('Include judge assignment'),
+                    value: includeJudges,
+                    onChanged: (value) {
+                      setState(() {
+                        includeJudges = value ?? true;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, includeJudges),
+                  child: const Text('Clone Floor'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null && context.mounted) {
+      try {
+        await EventFloorRepository().cloneEventFloor(
+          eventFloorId: floor.id,
+          includeJudgeAssignments: result,
+        );
+        
+        ref.invalidate(eventProvider(widget.eventId));
+        ref.invalidate(totalFeesForSessionProvider(session.id));
+        
+        if (mounted) {
+          setState(() {
+            _refreshKey++;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Floor cloned successfully')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error cloning floor: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _editSessionTimes(BuildContext context, EventSession session) async {
+    TimeOfDay newStart = session.startTime;
+    TimeOfDay newEnd = session.endTime;
+    String? error;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            Future<void> pickStart() async {
+              final picked = await showTimePicker(
+                context: context,
+                initialTime: newStart,
+              );
+              if (picked != null) {
+                setState(() {
+                  newStart = picked;
+                });
+              }
+            }
+
+            Future<void> pickEnd() async {
+              final picked = await showTimePicker(
+                context: context,
+                initialTime: newEnd,
+              );
+              if (picked != null) {
+                setState(() {
+                  newEnd = picked;
+                });
+              }
+            }
+
+            String format(TimeOfDay t) => t.format(context);
+
+            return AlertDialog(
+              title: const Text('Edit Session Time'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.play_arrow),
+                    title: const Text('Start time'),
+                    subtitle: Text(format(newStart)),
+                    onTap: pickStart,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.stop),
+                    title: const Text('End time'),
+                    subtitle: Text(format(newEnd)),
+                    onTap: pickEnd,
+                  ),
+                  if (error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        error!,
+                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+                      ),
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final startMinutes = newStart.hour * 60 + newStart.minute;
+                    final endMinutes = newEnd.hour * 60 + newEnd.minute;
+                    if (endMinutes <= startMinutes) {
+                      setState(() {
+                        error = 'End time must be after start time.';
+                      });
+                      return;
+                    }
+                    Navigator.pop(context, true);
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        final updated = session.copyWith(
+          startTime: newStart,
+          endTime: newEnd,
+          updatedAt: DateTime.now(),
+        );
+
+        await EventSessionRepository().updateEventSession(updated);
+        await JudgeAssignmentRepository().recalcAutoFeesForSession(session.id);
+
+        // Invalidate fee totals for floors and assignments in this session
+        final floorRepo = EventFloorRepository();
+        final assignmentRepo = JudgeAssignmentRepository();
+        final floors = await floorRepo.getEventFloorsBySessionId(session.id);
+        for (final floor in floors) {
+          ref.invalidate(totalFeesForFloorProvider(floor.id));
+          final assignments = await assignmentRepo.getAssignmentsByFloorId(floor.id);
+          for (final assignment in assignments) {
+            ref.invalidate(totalFeesByAssignmentProvider(assignment.id));
+          }
+        }
+
+        ref.invalidate(eventProvider(widget.eventId));
+        ref.invalidate(totalFeesForSessionProvider(session.id));
+        ref.invalidate(totalFeesForDayProvider(session.eventDayId));
+
+        if (mounted) {
+          setState(() {
+            _refreshKey++;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Session time updated')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error updating session: $e')),
           );
         }
       }

@@ -161,9 +161,37 @@ class EventStructureScreen extends ConsumerWidget {
                     },
                   ),
                   const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.delete, size: 20),
-                    onPressed: () => _confirmDeleteDay(context, ref, day, event),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, size: 20),
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(
+                        value: 'clone',
+                        child: Row(
+                          children: [
+                            Icon(Icons.content_copy, size: 18),
+                            SizedBox(width: 8),
+                            Text('Clone Day'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, size: 18, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Delete Day', style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onSelected: (value) {
+                      if (value == 'clone') {
+                        _showCloneDayDialog(context, ref, day);
+                      } else if (value == 'delete') {
+                        _confirmDeleteDay(context, ref, day, event);
+                      }
+                    },
                   ),
                   const Icon(Icons.chevron_right),
                 ],
@@ -177,6 +205,101 @@ class EventStructureScreen extends ConsumerWidget {
 
   void _showAddDayDialog(BuildContext context, WidgetRef ref, Event event, int currentDayCount) {
     context.push('/events/$eventId/add-day');
+  }
+
+  Future<void> _showCloneDayDialog(BuildContext context, WidgetRef ref, EventDay day) async {
+    DateTime selectedDate = day.date.add(const Duration(days: 1));
+    bool includeJudges = true;
+
+    final result = await showDialog<Map<String, dynamic>?>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Clone Day'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Create a copy of Day ${day.dayNumber} with all its sessions and floors.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  ListTile(
+                    title: const Text('New Date'),
+                    subtitle: Text(DateFormat('EEEE, MMMM d, yyyy').format(selectedDate)),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2030),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          selectedDate = picked;
+                        });
+                      }
+                    },
+                  ),
+                  CheckboxListTile(
+                    title: const Text('Include judge assignments'),
+                    value: includeJudges,
+                    onChanged: (value) {
+                      setState(() {
+                        includeJudges = value ?? true;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, {
+                    'date': selectedDate,
+                    'includeJudges': includeJudges,
+                  }),
+                  child: const Text('Clone Day'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null && context.mounted) {
+      try {
+        final newDay = await EventDayRepository().cloneEventDay(
+          eventDayId: day.id,
+          newDate: result['date'] as DateTime,
+          includeJudgeAssignments: result['includeJudges'] as bool,
+        );
+
+        ref.invalidate(eventProvider(eventId));
+        ref.invalidate(totalFeesForDayProvider(day.id));
+        ref.invalidate(totalFeesForDayProvider(newDay.id));
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Day cloned successfully')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error cloning day: $e')),
+          );
+        }
+      }
+    }
   }
 
   Future<void> _confirmDeleteDay(BuildContext context, WidgetRef ref, EventDay day, Event event) async {

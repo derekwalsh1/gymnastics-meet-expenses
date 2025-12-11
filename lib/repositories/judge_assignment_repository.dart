@@ -305,4 +305,113 @@ class JudgeAssignmentRepository {
     // Return raw map since we don't have EventDay import here
     return maps.first;
   }
+
+  // Recalculate auto-calculated session fees after time changes
+  Future<void> recalcAutoFeesForSession(String eventSessionId) async {
+    final sessionRepo = EventSessionRepository();
+    final feeRepo = JudgeFeeRepository();
+
+    final session = await sessionRepo.getEventSessionById(eventSessionId);
+    if (session == null) return;
+
+    final sessionHours = session.durationInHours;
+    final assignments = await getAssignmentsBySessionId(eventSessionId);
+
+    for (final assignment in assignments) {
+      final fees = await feeRepo.getFeesByAssignmentId(assignment.id);
+
+      JudgeFee? autoSessionFee;
+      for (final fee in fees) {
+        if (fee.isAutoCalculated && fee.feeType == FeeType.sessionRate) {
+          autoSessionFee = fee;
+          break;
+        }
+      }
+
+      final amount = assignment.hourlyRate * sessionHours;
+
+      if (autoSessionFee != null) {
+        final updated = autoSessionFee.copyWith(
+          amount: amount,
+          hours: sessionHours,
+        );
+        await feeRepo.updateFee(updated);
+      } else {
+        await feeRepo.createFee(
+          judgeAssignmentId: assignment.id,
+          feeType: FeeType.sessionRate,
+          description: 'Session fee for ${session.name}',
+          amount: amount,
+          hours: sessionHours,
+          isAutoCalculated: true,
+          isTaxable: true,
+        );
+      }
+    }
+  }
+
+  // Clone an assignment to a new floor
+  Future<JudgeAssignment> cloneAssignment({
+    required String assignmentId,
+    required String newEventFloorId,
+  }) async {
+    final db = await _dbService.database;
+    
+    // Get the original assignment
+    final originalAssignment = await getAssignmentById(assignmentId);
+    if (originalAssignment == null) {
+      throw Exception('Assignment not found');
+    }
+
+    final now = DateTime.now();
+    
+    // Create the new assignment with the same judge info
+    final newAssignment = JudgeAssignment(
+      id: _uuid.v4(),
+      eventFloorId: newEventFloorId,
+      judgeId: originalAssignment.judgeId,
+      judgeFirstName: originalAssignment.judgeFirstName,
+      judgeLastName: originalAssignment.judgeLastName,
+      judgeAssociation: originalAssignment.judgeAssociation,
+      judgeLevel: originalAssignment.judgeLevel,
+      judgeContactInfo: originalAssignment.judgeContactInfo,
+      role: originalAssignment.role,
+      hourlyRate: originalAssignment.hourlyRate,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    await db.insert('judge_assignments', newAssignment.toMap());
+
+    // Auto-create session fee for the new assignment
+    try {
+      final floorRepo = EventFloorRepository();
+      final sessionRepo = EventSessionRepository();
+      final feeRepo = JudgeFeeRepository();
+
+      final floor = await floorRepo.getEventFloorById(newEventFloorId);
+      if (floor != null) {
+        final session = await sessionRepo.getEventSessionById(floor.eventSessionId);
+        if (session != null) {
+          final sessionHours = session.durationInHours;
+          final amount = newAssignment.hourlyRate * sessionHours;
+
+          await feeRepo.createFee(
+            judgeAssignmentId: newAssignment.id,
+            feeType: FeeType.sessionRate,
+            description: 'Session fee for ${session.name}',
+            amount: amount,
+            hours: sessionHours,
+            isAutoCalculated: true,
+            isTaxable: true,
+          );
+        }
+      }
+    } catch (e) {
+      print('Warning: Failed to auto-create session fee: $e');
+      // Don't fail the assignment if fee creation fails
+    }
+
+    return newAssignment;
+  }
 }
