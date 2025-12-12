@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import '../../models/meet_import_export_result.dart';
 import '../../services/meet_import_export_service.dart';
@@ -76,7 +76,7 @@ class _MeetExportScreenState extends ConsumerState<MeetExportScreen> {
     if (_exportResult?.filePath == null) {
       print('DEBUG: No file path in export result');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No file to share')),
+        const SnackBar(content: Text('No file to save')),
       );
       return;
     }
@@ -84,13 +84,13 @@ class _MeetExportScreenState extends ConsumerState<MeetExportScreen> {
     setState(() => _isSharing = true);
 
     try {
-      final filePath = _exportResult!.filePath!;
-      print('DEBUG: Attempting to share file: $filePath');
+      final sourceFilePath = _exportResult!.filePath!;
+      print('DEBUG: Attempting to save file: $sourceFilePath');
       
-      final file = File(filePath);
+      final sourceFile = File(sourceFilePath);
       
-      if (!await file.exists()) {
-        print('DEBUG: File does not exist at path: $filePath');
+      if (!await sourceFile.exists()) {
+        print('DEBUG: File does not exist at path: $sourceFilePath');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('File no longer exists')),
@@ -100,46 +100,46 @@ class _MeetExportScreenState extends ConsumerState<MeetExportScreen> {
         return;
       }
 
-      print('DEBUG: File exists, preparing to share');
+      // Use file_picker to let user save directly (avoids share sheet creating extra .txt file)
+      final fileName = 'meet_export_${_exportResult!.meetName.replaceAll(' ', '_')}.json';
       
-      // Get the share button position for iPad
-      Rect? sharePositionOrigin;
-      final RenderBox? box = _shareButtonKey.currentContext?.findRenderObject() as RenderBox?;
-      if (box != null) {
-        final position = box.localToGlobal(Offset.zero);
-        sharePositionOrigin = position & box.size;
-        print('DEBUG: Share position: $sharePositionOrigin');
-      } else {
-        print('DEBUG: Could not get button position, using center of screen');
-        // Fallback to center of screen for iPad
-        sharePositionOrigin = Rect.fromCenter(
-          center: const Offset(400, 400),
-          width: 10,
-          height: 10,
-        );
+      // Read the file bytes (required for Android & iOS)
+      final bytes = await sourceFile.readAsBytes();
+      print('DEBUG: Read ${bytes.length} bytes from source file');
+      
+      final outputPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Meet Export',
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        bytes: bytes, // Required for Android & iOS
+      );
+
+      if (outputPath == null) {
+        // User cancelled
+        print('DEBUG: User cancelled save');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Save cancelled')),
+          );
+        }
+        setState(() => _isSharing = false);
+        return;
       }
 
-      print('DEBUG: Calling Share.shareXFiles');
-      final result = await Share.shareXFiles(
-        [XFile(filePath)],
-        text: 'Gymnastics Meet Export: ${_exportResult!.meetName}',
-        subject: 'Meet Export - ${_exportResult!.meetName}',
-        sharePositionOrigin: sharePositionOrigin,
-      );
+      print('DEBUG: File saved successfully to: $outputPath');
       
-      print('DEBUG: Share result: ${result.status}');
-      
-      if (mounted && result.status == ShareResultStatus.success) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('File shared successfully')),
+          const SnackBar(content: Text('Meet exported successfully')),
         );
       }
     } catch (e, stackTrace) {
-      print('DEBUG: Share error: $e');
+      print('DEBUG: Save error: $e');
       print('DEBUG: Stack trace: $stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Share error: ${e.toString()}')),
+          SnackBar(content: Text('Save error: ${e.toString()}')),
         );
       }
     } finally {
@@ -251,8 +251,8 @@ class _MeetExportScreenState extends ConsumerState<MeetExportScreen> {
                               height: 16,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.share),
-                        label: Text(_isSharing ? 'Sharing...' : 'Share File'),
+                          : const Icon(Icons.save),
+                        label: Text(_isSharing ? 'Saving...' : 'Save File'),
                       ),
                     ),
                   ],

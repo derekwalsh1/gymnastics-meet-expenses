@@ -68,16 +68,21 @@ class _MeetImportScreenState extends ConsumerState<MeetImportScreen> {
       });
 
       if (result.success) {
+        // Refresh all event-related data
+        ref.invalidate(eventProvider);
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result.message),
+            content: Text('${result.message} - Opening imported meet...'),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 2),
           ),
         );
-        // Could navigate back with success
-        Future.delayed(const Duration(seconds: 1), () {
-          Navigator.of(context).pop(result.meetId);
+        // Navigate to the newly imported meet
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted && result.meetId != null) {
+            context.go('/events/${result.meetId}');
+          }
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

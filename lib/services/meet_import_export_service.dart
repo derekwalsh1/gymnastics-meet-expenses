@@ -21,8 +21,12 @@ import '../repositories/judge_repository.dart';
 import '../repositories/judge_assignment_repository.dart';
 import '../repositories/judge_fee_repository.dart';
 import '../repositories/expense_repository.dart';
+import '../repositories/judge_certification_repository.dart';
+import '../models/judge_certification.dart';
+import '../services/database_service.dart';
 
 class MeetImportExportService {
+  final DatabaseService _dbService = DatabaseService.instance;
   final EventRepository _eventRepository = EventRepository();
   final EventSessionRepository _sessionRepository = EventSessionRepository();
   final EventFloorRepository _floorRepository = EventFloorRepository();
@@ -31,6 +35,7 @@ class MeetImportExportService {
   final JudgeAssignmentRepository _assignmentRepository = JudgeAssignmentRepository();
   final JudgeFeeRepository _feeRepository = JudgeFeeRepository();
   final ExpenseRepository _expenseRepository = ExpenseRepository();
+  final JudgeCertificationRepository _certificationRepository = JudgeCertificationRepository();
   final _uuid = const Uuid();
 
   CancelableOperation<MeetImportResult>? _currentImportOperation;
@@ -58,6 +63,7 @@ class MeetImportExportService {
       final days = await _dayRepository.getEventDaysByEventId(eventId);
       final floors = <EventFloor>[];
       final judges = <Judge>[];
+      final certifications = <JudgeCertification>[];
       final assignments = <JudgeAssignment>[];
       final fees = <JudgeFee>[];
       final expenses = await _expenseRepository.getExpensesByEventId(eventId);
@@ -77,6 +83,10 @@ class MeetImportExportService {
           final judge = await _judgeRepository.getJudgeById(assignment.judgeId);
           if (judge != null && !judges.any((j) => j.id == judge.id)) {
             judges.add(judge);
+            
+            // Get certifications for this judge
+            final judgeCerts = await _certificationRepository.getCertificationsForJudge(judge.id);
+            certifications.addAll(judgeCerts);
           }
 
           // Get fees for this assignment
@@ -95,6 +105,7 @@ class MeetImportExportService {
         'days': days.map((d) => d.toJson()).toList(),
         'floors': floors.map((f) => f.toJson()).toList(),
         'judges': judges.map((j) => j.toJson()).toList(),
+        'certifications': certifications.map((c) => c.toJson()).toList(),
         'assignments': assignments.map((a) => a.toJson()).toList(),
         'fees': fees.map((f) => f.toJson()).toList(),
         'expenses': expenses.map((e) => e.toJson()).toList(),
@@ -146,10 +157,8 @@ class MeetImportExportService {
         // 1. Import meet (event)
         final meetData = jsonData['meet'] as Map<String, dynamic>;
         final oldMeetId = meetData['id'] as String;
-        final newMeetId = _uuid.v4();
-        idMap[oldMeetId] = newMeetId;
 
-        // Create new event
+        // Create new event (it will generate its own UUID)
         final event = await _eventRepository.createEvent(
           name: meetData['name'] ?? 'Imported Meet',
           startDate: DateTime.parse(meetData['startDate'] ?? DateTime.now().toIso8601String()),
@@ -164,23 +173,28 @@ class MeetImportExportService {
           ),
         );
 
+        // Map old meet ID to the actual created event ID
+        final newMeetId = event.id;
+        idMap[oldMeetId] = newMeetId;
+        
+
         // 2. Import days
         if (jsonData['days'] is List) {
           for (final dayData in jsonData['days'] as List) {
             try {
               final dayMap = dayData as Map<String, dynamic>;
               final oldDayId = dayMap['id'];
-              final newDayId = _uuid.v4();
-              idMap[oldDayId] = newDayId;
 
-              await _dayRepository.createEventDay(
+              final createdDay = await _dayRepository.createEventDay(
                 eventId: newMeetId,
                 dayNumber: dayMap['dayNumber'] ?? 1,
                 date: DateTime.parse(dayMap['date'] ?? DateTime.now().toIso8601String()),
                 notes: dayMap['notes'],
               );
+              
+              idMap[oldDayId] = createdDay.id;
               daysCreated++;
-            } catch (e) {
+            } catch (e, stack) {
               errors.add('Failed to import day: ${e.toString()}');
             }
           }
@@ -192,13 +206,10 @@ class MeetImportExportService {
             try {
               final sessionMap = sessionData as Map<String, dynamic>;
               final oldSessionId = sessionMap['id'];
-              final newSessionId = _uuid.v4();
-              idMap[oldSessionId] = newSessionId;
-
               final oldDayId = sessionMap['eventDayId'];
               final newDayId = idMap[oldDayId] ?? oldDayId;
 
-              await _sessionRepository.createEventSession(
+              final createdSession = await _sessionRepository.createEventSession(
                 eventDayId: newDayId,
                 sessionNumber: sessionMap['sessionNumber'] ?? 1,
                 name: sessionMap['name'] ?? 'Session',
@@ -206,8 +217,10 @@ class MeetImportExportService {
                 endTime: _parseTimeOfDay(sessionMap['endTime'] ?? '17:00'),
                 notes: sessionMap['notes'],
               );
+              
+              idMap[oldSessionId] = createdSession.id;
               sessionsCreated++;
-            } catch (e) {
+            } catch (e, stack) {
               errors.add('Failed to import session: ${e.toString()}');
             }
           }
@@ -219,53 +232,194 @@ class MeetImportExportService {
             try {
               final floorMap = floorData as Map<String, dynamic>;
               final oldFloorId = floorMap['id'];
-              final newFloorId = _uuid.v4();
-              idMap[oldFloorId] = newFloorId;
               final oldSessionId = floorMap['eventSessionId'];
               final newSessionId = idMap[oldSessionId] ?? oldSessionId;
 
-              await _floorRepository.createEventFloor(
+              final createdFloor = await _floorRepository.createEventFloor(
                 eventSessionId: newSessionId,
                 floorNumber: floorMap['floorNumber'] ?? 1,
                 name: floorMap['name'] ?? 'Floor',
                 notes: floorMap['notes'],
               );
+              
+              idMap[oldFloorId] = createdFloor.id;
               floorsCreated++;
-            } catch (e) {
+            } catch (e, stack) {
               errors.add('Failed to import floor: ${e.toString()}');
             }
           }
         }
 
-        // 5. Import judges
+        // 5. Import judges (check for duplicates by name)
         if (jsonData['judges'] is List) {
           for (final judgeData in jsonData['judges'] as List) {
             try {
               final judgeMap = judgeData as Map<String, dynamic>;
               final oldJudgeId = judgeMap['id'];
-              final newJudgeId = _uuid.v4();
-              idMap[oldJudgeId] = newJudgeId;
+              final firstName = judgeMap['firstName'] ?? 'Unknown';
+              final lastName = judgeMap['lastName'] ?? 'Judge';
 
-              final judge = Judge(
-                id: newJudgeId,
-                firstName: judgeMap['firstName'] ?? 'Unknown',
-                lastName: judgeMap['lastName'] ?? 'Judge',
-                contactInfo: judgeMap['contactInfo'],
-                notes: judgeMap['notes'],
-                createdAt: DateTime.now(),
-                updatedAt: DateTime.now(),
-                isArchived: judgeMap['isArchived'] ?? false,
-              );
+              // Check if judge already exists by name
+              final existingJudges = await _judgeRepository.getAllJudges(includeArchived: true);
+              final existingJudge = existingJudges.where((j) => 
+                j.firstName.toLowerCase() == firstName.toLowerCase() && 
+                j.lastName.toLowerCase() == lastName.toLowerCase()
+              ).firstOrNull;
 
-              await _judgeRepository.createJudge(judge);
-              judgesCreated++;
+              if (existingJudge != null) {
+                // Use existing judge
+                idMap[oldJudgeId] = existingJudge.id;
+                warnings.add('Judge "$firstName $lastName" already exists, using existing record');
+              } else {
+                // Create new judge
+                final newJudgeId = _uuid.v4();
+                idMap[oldJudgeId] = newJudgeId;
+
+                final judge = Judge(
+                  id: newJudgeId,
+                  firstName: firstName,
+                  lastName: lastName,
+                  contactInfo: judgeMap['contactInfo'],
+                  notes: judgeMap['notes'],
+                  createdAt: DateTime.now(),
+                  updatedAt: DateTime.now(),
+                  isArchived: judgeMap['isArchived'] ?? false,
+                );
+
+                await _judgeRepository.createJudge(judge);
+                judgesCreated++;
+              }
             } catch (e) {
               errors.add('Failed to import judge: ${e.toString()}');
             }
           }
         }
 
-        // 6. Import expenses (simpler than assignments)
+        // 5b. Import judge certifications
+        if (jsonData['certifications'] is List) {
+          for (final certData in jsonData['certifications'] as List) {
+            try {
+              final certMap = certData as Map<String, dynamic>;
+              final oldJudgeId = certMap['judgeId'];
+              final newJudgeId = idMap[oldJudgeId];
+              
+              if (newJudgeId == null) {
+                warnings.add('Skipping certification for unknown judge');
+                continue;
+              }
+
+              // Check if this judge already has this level
+              final judgeLevelId = certMap['judgeLevelId'];
+              final existingCert = await _certificationRepository.getCertification(newJudgeId, judgeLevelId);
+              
+              if (existingCert == null) {
+                final certification = JudgeCertification(
+                  id: _uuid.v4(),
+                  judgeId: newJudgeId,
+                  judgeLevelId: judgeLevelId,
+                  certificationDate: certMap['certificationDate'] != null 
+                    ? DateTime.parse(certMap['certificationDate'])
+                    : null,
+                  expirationDate: certMap['expirationDate'] != null
+                    ? DateTime.parse(certMap['expirationDate'])
+                    : null,
+                  createdAt: DateTime.now(),
+                  updatedAt: DateTime.now(),
+                );
+
+                await _certificationRepository.createCertification(certification);
+              }
+            } catch (e) {
+              warnings.add('Failed to import certification: ${e.toString()}');
+            }
+          }
+        }
+
+        // 6. Import judge assignments
+        if (jsonData['assignments'] is List) {
+          for (final assignmentData in jsonData['assignments'] as List) {
+            try {
+              final assignmentMap = assignmentData as Map<String, dynamic>;
+              final oldAssignmentId = assignmentMap['id'];
+              final oldJudgeId = assignmentMap['judgeId'];
+              final oldFloorId = assignmentMap['eventFloorId'];
+              
+              final newJudgeId = idMap[oldJudgeId];
+              final newFloorId = idMap[oldFloorId];
+              
+              if (newJudgeId == null || newFloorId == null) {
+                warnings.add('Skipping assignment due to missing judge or floor mapping');
+                continue;
+              }
+
+              final newAssignmentId = _uuid.v4();
+              final assignment = JudgeAssignment(
+                id: newAssignmentId,
+                judgeId: newJudgeId,
+                eventFloorId: newFloorId,
+                apparatus: assignmentMap['apparatus'],
+                judgeFirstName: assignmentMap['judgeFirstName'] ?? '',
+                judgeLastName: assignmentMap['judgeLastName'] ?? '',
+                judgeAssociation: assignmentMap['judgeAssociation'] ?? '',
+                judgeLevel: assignmentMap['judgeLevel'] ?? '',
+                judgeContactInfo: assignmentMap['judgeContactInfo'],
+                role: assignmentMap['role'],
+                hourlyRate: (assignmentMap['hourlyRate'] as num?)?.toDouble() ?? 0.0,
+                createdAt: DateTime.now(),
+                updatedAt: DateTime.now(),
+              );
+
+              // Insert directly to avoid triggering auto-fee creation
+              final db = await _dbService.database;
+              await db.insert('judge_assignments', assignment.toMap());
+              idMap[oldAssignmentId] = newAssignmentId;
+              assignmentsCreated++;
+            } catch (e) {
+              errors.add('Failed to import assignment: ${e.toString()}');
+            }
+          }
+        }
+
+        // 7. Import judge fees
+        if (jsonData['fees'] is List) {
+          for (final feeData in jsonData['fees'] as List) {
+            try {
+              final feeMap = feeData as Map<String, dynamic>;
+              final oldAssignmentId = feeMap['judgeAssignmentId'];
+              final newAssignmentId = idMap[oldAssignmentId];
+              
+              if (newAssignmentId == null) {
+                warnings.add('Skipping fee due to missing assignment mapping');
+                continue;
+              }
+
+              final fee = JudgeFee(
+                id: _uuid.v4(),
+                judgeAssignmentId: newAssignmentId,
+                feeType: FeeType.values.firstWhere(
+                  (type) => type.name == (feeMap['feeType'] ?? 'sessionRate'),
+                  orElse: () => FeeType.sessionRate,
+                ),
+                amount: (feeMap['amount'] as num?)?.toDouble() ?? 0.0,
+                hours: (feeMap['hours'] as num?)?.toDouble(),
+                description: feeMap['description'] ?? '',
+                isAutoCalculated: feeMap['isAutoCalculated'] ?? false,
+                isTaxable: feeMap['isTaxable'] ?? true,
+                createdAt: DateTime.now(),
+                updatedAt: DateTime.now(),
+              );
+
+              // Insert directly 
+              final db = await _dbService.database;
+              await db.insert('judge_fees', fee.toMap());
+              feesCreated++;
+            } catch (e) {
+              errors.add('Failed to import fee: ${e.toString()}');
+            }
+          }
+        }
+
+        // 8. Import expenses
         if (jsonData['expenses'] is List) {
           for (final expenseData in jsonData['expenses'] as List) {
             try {

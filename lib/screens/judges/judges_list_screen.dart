@@ -17,6 +17,8 @@ class JudgesListScreen extends ConsumerStatefulWidget {
 
 class _JudgesListScreenState extends ConsumerState<JudgesListScreen> {
   final TextEditingController _searchController = TextEditingController();
+  bool _selectionMode = false;
+  final Set<String> _selectedJudgeIds = <String>{};
 
   @override
   void dispose() {
@@ -38,8 +40,54 @@ class _JudgesListScreenState extends ConsumerState<JudgesListScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/'),
         ),
-        title: const Text('Judges'),
+        title: Text(_selectionMode
+            ? (_selectedJudgeIds.isEmpty
+                ? 'Select judges'
+                : '${_selectedJudgeIds.length} selected')
+            : 'Judges'),
         actions: [
+          if (_selectionMode) ...[
+            IconButton(
+              icon: const Icon(Icons.select_all),
+              tooltip: 'Select All',
+              onPressed: () {
+                final judges = ref.read(filteredJudgesWithLevelsProvider).value;
+                if (judges != null) {
+                  setState(() {
+                    _selectedJudgeIds
+                      ..clear()
+                      ..addAll(judges.map((j) => j.judge.id));
+                  });
+                }
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.clear_all),
+              tooltip: 'Clear Selection',
+              onPressed: () {
+                setState(() {
+                  _selectedJudgeIds.clear();
+                });
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_forever),
+              tooltip: 'Delete Selected',
+              onPressed: _selectedJudgeIds.isEmpty
+                  ? null
+                  : () => _confirmBulkDelete(context),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close),
+              tooltip: 'Exit Selection',
+              onPressed: () {
+                setState(() {
+                  _selectionMode = false;
+                  _selectedJudgeIds.clear();
+                });
+              },
+            ),
+          ] else ...[
           IconButton(
             icon: const Icon(Icons.settings),
             tooltip: 'Manage Judge Levels',
@@ -75,6 +123,17 @@ class _JudgesListScreenState extends ConsumerState<JudgesListScreen> {
               context.push('/judges/import-export');
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.check_box),
+            tooltip: 'Select Multiple',
+            onPressed: () {
+              setState(() {
+                _selectionMode = true;
+                _selectedJudgeIds.clear();
+              });
+            },
+          ),
+          ]
         ],
       ),
       body: Column(
@@ -143,9 +202,29 @@ class _JudgesListScreenState extends ConsumerState<JudgesListScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemBuilder: (context, index) {
                     final judgeWithLevel = judges[index];
+                    final isSelected = _selectedJudgeIds.contains(judgeWithLevel.judge.id);
                     return _JudgeCard(
                       judgeWithLevel: judgeWithLevel,
-                      onTap: () => _navigateToEditJudge(context, judgeWithLevel.judge),
+                      selectionMode: _selectionMode,
+                      isSelected: isSelected,
+                      onSelectionToggle: (value) {
+                        setState(() {
+                          if (value == true) {
+                            _selectedJudgeIds.add(judgeWithLevel.judge.id);
+                          } else {
+                            _selectedJudgeIds.remove(judgeWithLevel.judge.id);
+                          }
+                        });
+                      },
+                      onTap: () => _selectionMode
+                          ? setState(() {
+                              if (isSelected) {
+                                _selectedJudgeIds.remove(judgeWithLevel.judge.id);
+                              } else {
+                                _selectedJudgeIds.add(judgeWithLevel.judge.id);
+                              }
+                            })
+                          : _navigateToEditJudge(context, judgeWithLevel.judge),
                       onDelete: () => _confirmDeleteJudge(context, judgeWithLevel.judge),
                     );
                   },
@@ -352,15 +431,75 @@ class _JudgesListScreenState extends ConsumerState<JudgesListScreen> {
       ),
     );
   }
+
+  void _confirmBulkDelete(BuildContext context) {
+    if (_selectedJudgeIds.isEmpty) return;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Selected Judges'),
+        content: Text(
+          'Are you sure you want to delete ${_selectedJudgeIds.length} selected judge(s)? This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                final notifier = ref.read(judgeNotifierProvider.notifier);
+                for (final id in _selectedJudgeIds) {
+                  await notifier.deleteJudge(id);
+                }
+                // Refresh lists
+                ref.invalidate(judgesWithLevelsProvider);
+                ref.invalidate(filteredJudgesWithLevelsProvider);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      SnackBar(
+                        content: Text('${_selectedJudgeIds.length} judge(s) deleted'),
+                        duration: const Duration(milliseconds: 800),
+                      ),
+                    );
+                }
+                setState(() {
+                  _selectionMode = false;
+                  _selectedJudgeIds.clear();
+                });
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error deleting judges: $e')),
+                  );
+                }
+              }
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _JudgeCard extends StatelessWidget {
   final JudgeWithLevels judgeWithLevel;
+  final bool selectionMode;
+  final bool isSelected;
+  final ValueChanged<bool?>? onSelectionToggle;
   final VoidCallback onTap;
   final VoidCallback onDelete;
 
   const _JudgeCard({
     required this.judgeWithLevel,
+    required this.selectionMode,
+    required this.isSelected,
+    this.onSelectionToggle,
     required this.onTap,
     required this.onDelete,
   });
@@ -375,7 +514,9 @@ class _JudgeCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         onTap: onTap,
-        leading: CircleAvatar(
+        leading: selectionMode
+            ? Checkbox(value: isSelected, onChanged: onSelectionToggle)
+            : CircleAvatar(
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           child: Text(
             (judge.firstName.isNotEmpty ? judge.firstName[0] : '') + 
@@ -426,10 +567,12 @@ class _JudgeCard extends StatelessWidget {
           ],
         ),
         isThreeLine: hasCerts,
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline),
-          onPressed: onDelete,
-        ),
+        trailing: selectionMode
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.delete_outline),
+                onPressed: onDelete,
+              ),
       ),
     );
   }
