@@ -189,18 +189,44 @@ void main() {
     // Step 2: Choose Quick Meet template
     await tester.tap(find.text('Quick Meet').first);
     await tester.pumpAndSettle();
+    
+    // Next to structure step
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Next'));
+    await tester.pumpAndSettle();
 
-    // Next through structure step
+    // Verify we're on structure step (should see customization options)
+    expect(find.text('Customize Event Structure'), findsOneWidget);
+
+    // Step 3: Structure step - click Next to go to Review/Confirmation
     await tester.tap(find.widgetWithText(ElevatedButton, 'Next'));
     await tester.pumpAndSettle();
 
     // Step 4: Review and create
+    expect(find.widgetWithText(AppBar, 'Create Event'), findsOneWidget);
     final createEventButton = find.widgetWithText(ElevatedButton, 'Create Event');
+    if (createEventButton.evaluate().isEmpty) {
+      // Debug: what buttons are visible?
+      final allButtons = find.byType(ElevatedButton).evaluate();
+      final buttonTexts = allButtons.map((w) {
+        final btn = w.widget as ElevatedButton;
+        return btn.child.toString();
+      }).toList();
+      // ignore: avoid_print
+      print('DEBUG: ElevatedButtons found: $buttonTexts');
+      
+      final allTexts = find.byType(Text).evaluate();
+      final textVals = allTexts.map((w) {
+        final t = w.widget as Text;
+        return t.data;
+      }).whereType<String>().take(40).toList();
+      // ignore: avoid_print
+      print('DEBUG: Text widgets found: $textVals');
+    }
     expect(createEventButton, findsOneWidget);
     await tester.tap(createEventButton);
     await tester.pump();
-    // Allow up to 12 seconds for event creation/navigation
-    await tester.pumpAndSettle(const Duration(seconds: 12));
+    // Allow up to 5 seconds for event creation/navigation
+    await tester.pumpAndSettle(const Duration(seconds: 5));
 
     // Look for success or error snackbars to understand creation result
     final successSnack = find.text('Event created successfully!');
@@ -262,20 +288,20 @@ void main() {
       // Ensure we are on Events list
       await openEventsList();
 
-      // Wait for loading spinner to disappear
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      // Wait for loading spinner to disappear (max 3 seconds)
+      await tester.pumpAndSettle(const Duration(seconds: 1));
       if (find.byType(CircularProgressIndicator).evaluate().isNotEmpty) {
-        await tester.pumpAndSettle(const Duration(seconds: 5));
+        await tester.pumpAndSettle(const Duration(seconds: 3));
       }
 
-      // Wait for either an event card/list tile or the empty-state text
+      // Wait for either an event card/list tile or the empty-state text (max 5 seconds total)
       final listTileFinder = find.byType(ListTile);
       final emptyTextFinder = find.text('No events yet');
-      for (int i = 0; i < 5; i++) {
+      for (int i = 0; i < 3; i++) {
         if (listTileFinder.evaluate().isNotEmpty || emptyTextFinder.evaluate().isNotEmpty) {
           break;
         }
-        await tester.pumpAndSettle(const Duration(seconds: 2));
+        await tester.pumpAndSettle(const Duration(seconds: 1));
       }
     }
 
