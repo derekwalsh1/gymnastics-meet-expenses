@@ -372,6 +372,7 @@ class _AddEditJudgeScreenState extends ConsumerState<AddEditJudgeScreen> {
                           ),
                         ),
                         TextButton.icon(
+                          key: const Key('add_certification_button'),
                           onPressed: () => _showAddCertificationDialog(),
                           icon: const Icon(Icons.add),
                           label: const Text('Add'),

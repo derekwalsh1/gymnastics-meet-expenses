@@ -59,6 +59,7 @@ class HomeScreen extends StatelessWidget {
                     onTap: () => context.push('/judges'),
                   ),
                   _QuickActionCard(
+                    key: const Key('events_quick_action'),
                     icon: Icons.calendar_today,
                     title: 'Events',
                     subtitle: 'View all events',
@@ -81,6 +82,7 @@ class _QuickActionCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _QuickActionCard({
+    super.key,
     required this.icon,
     required this.title,
     required this.subtitle,
