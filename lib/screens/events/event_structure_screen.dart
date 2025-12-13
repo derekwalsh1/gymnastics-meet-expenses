@@ -315,8 +315,8 @@ class _EventStructureScreenState extends ConsumerState<EventStructureScreen> {
                     Padding(
                       padding: const EdgeInsets.all(8),
                       child: _buildJudgeCell(
-                        (session['judges'][apparatus] as List<String>).length > i
-                            ? (session['judges'][apparatus] as List<String>)[i]
+                        (session['judges'][apparatus] as List<Map<String, String>>).length > i
+                            ? (session['judges'][apparatus] as List<Map<String, String>>)[i]
                             : null
                       ),
                     ),
@@ -328,15 +328,37 @@ class _EventStructureScreenState extends ConsumerState<EventStructureScreen> {
     );
   }
 
-  Widget _buildJudgeCell(String? judgeName) {
-    if (judgeName == null || judgeName.isEmpty) {
+  Widget _buildJudgeCell(Map<String, String>? judgeInfo) {
+    if (judgeInfo == null || judgeInfo['name'] == null || judgeInfo['name']!.isEmpty) {
       return const SizedBox(height: 30);
     }
-    return Text(
-      judgeName,
-      style: const TextStyle(fontSize: 13),
-      textAlign: TextAlign.center,
-      overflow: TextOverflow.ellipsis,
+    
+    return InkWell(
+      onTap: () {
+        final floorId = judgeInfo['floorId'];
+        final dayId = judgeInfo['dayId'];
+        final sessionId = judgeInfo['sessionId'];
+        if (floorId != null && dayId != null && sessionId != null) {
+          context.push(
+            '/events/${widget.eventId}/days/$dayId/sessions/$sessionId/floors/$floorId'
+          ).then((_) {
+            // Invalidate assignment providers to force fresh data
+            ref.invalidate(assignmentsByFloorProvider(floorId));
+            ref.invalidate(assignmentsBySessionProvider(sessionId));
+            ref.invalidate(assignmentsByEventProvider(widget.eventId));
+            _refresh();
+          });
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+        child: Text(
+          judgeInfo['name']!,
+          style: const TextStyle(fontSize: 13),
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     );
   }
 
@@ -407,12 +429,14 @@ class _EventStructureScreenState extends ConsumerState<EventStructureScreen> {
       sessionsMap.putIfAbsent(session.id, () => {
         'name': session.name ?? 'Session ${session.sessionNumber}',
         'startTime': DateTime(2000, 1, 1, session.startTime.hour, session.startTime.minute),
-        'judges': <String, List<String>>{
-          'Vault': <String>[],
-          'Bars': <String>[],
-          'Beam': <String>[],
-          'Floor': <String>[],
-          'Other': <String>[],
+        'dayId': day.id,
+        'sessionId': session.id,
+        'judges': <String, List<Map<String, String>>>{
+          'Vault': <Map<String, String>>[],
+          'Bars': <Map<String, String>>[],
+          'Beam': <Map<String, String>>[],
+          'Floor': <Map<String, String>>[],
+          'Other': <Map<String, String>>[],
         },
         'maxJudges': 0,
       });
@@ -424,18 +448,24 @@ class _EventStructureScreenState extends ConsumerState<EventStructureScreen> {
       for (final assignment in assignments) {
         final apparatus = assignment.apparatus ?? 'Other';
         if (['Vault', 'Bars', 'Beam', 'Floor', 'Other'].contains(apparatus)) {
-          final judgesList = sessionsMap[session.id]!['judges'][apparatus] as List<String>;
-          judgesList.add(assignment.judgeFullName);
+          final judgesList = sessionsMap[session.id]!['judges'][apparatus] as List<Map<String, String>>;
+          judgesList.add({
+            'name': assignment.judgeFullName,
+            'floorId': floor.id,
+            'dayId': day.id,
+            'sessionId': session.id,
+          });
         }
       }
       
       // Update max judges count
-      final currentMax = sessionsMap[session.id]!['maxJudges'] as int;
-      for (final judgesList in (sessionsMap[session.id]!['judges'] as Map<String, List<String>>).values) {
-        if (judgesList.length > currentMax) {
-          sessionsMap[session.id]!['maxJudges'] = judgesList.length;
+      int maxCount = 0;
+      for (final judgesList in (sessionsMap[session.id]!['judges'] as Map<String, List<Map<String, String>>>).values) {
+        if (judgesList.length > maxCount) {
+          maxCount = judgesList.length;
         }
       }
+      sessionsMap[session.id]!['maxJudges'] = maxCount;
     }
     
     // Convert to sorted list
