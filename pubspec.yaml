@@ -21,6 +21,7 @@ dependencies:
   # UI Components
   cupertino_icons: ^1.0.6
   google_fonts: ^6.1.0
+  flutter_svg: ^2.0.0
   
   # Navigation
   go_router: ^17.0.0
@@ -77,7 +78,6 @@ flutter_launcher_icons:
 flutter:
   uses-material-design: true
   
-  # Uncomment to add assets
-  # assets:
-  #   - assets/images/
-  #   - assets/icons/
+  # Assets for custom apparatus icons
+  assets:
+    - assets/icons/

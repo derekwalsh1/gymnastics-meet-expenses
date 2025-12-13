@@ -432,13 +432,45 @@ class MeetImportExportService {
               final oldJudgeId = expenseMap['judgeId'];
               final newJudgeId = oldJudgeId != null ? idMap[oldJudgeId] : null;
 
+              // Parse category from JSON
+              final categoryStr = expenseMap['category'] as String?;
+              final category = categoryStr != null
+                  ? ExpenseCategory.values.firstWhere(
+                      (e) => e.name == categoryStr,
+                      orElse: () => ExpenseCategory.other,
+                    )
+                  : ExpenseCategory.other;
+
+              // Parse meal type if present
+              final mealTypeStr = expenseMap['mealType'] as String?;
+              final mealType = mealTypeStr != null
+                  ? MealType.values.firstWhere(
+                      (e) => e.name == mealTypeStr,
+                      orElse: () => MealType.breakfast,
+                    )
+                  : null;
+
               await _expenseRepository.createExpense(
                 eventId: newMeetId,
                 judgeId: newJudgeId,
-                category: ExpenseCategory.other,
+                category: category,
                 amount: (expenseMap['amount'] as num?)?.toDouble() ?? 0.0,
                 date: DateTime.parse(expenseMap['date'] ?? DateTime.now().toIso8601String()),
                 description: expenseMap['description'] ?? '',
+                distance: (expenseMap['distance'] as num?)?.toDouble(),
+                mileageRate: (expenseMap['mileageRate'] as num?)?.toDouble(),
+                mealType: mealType,
+                perDiemRate: (expenseMap['perDiemRate'] as num?)?.toDouble(),
+                transportationType: expenseMap['transportationType'] as String?,
+                checkInDate: expenseMap['checkInDate'] != null
+                    ? DateTime.parse(expenseMap['checkInDate'])
+                    : null,
+                checkOutDate: expenseMap['checkOutDate'] != null
+                    ? DateTime.parse(expenseMap['checkOutDate'])
+                    : null,
+                numberOfNights: expenseMap['numberOfNights'] as int?,
+                receiptPhotoPath: expenseMap['receiptPhotoPath'] as String?,
+                isAutoCalculated: expenseMap['isAutoCalculated'] as bool? ?? false,
               );
               expensesCreated++;
             } catch (e) {

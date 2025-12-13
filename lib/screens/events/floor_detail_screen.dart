@@ -12,6 +12,7 @@ import '../../providers/judge_fee_provider.dart';
 import '../../repositories/event_floor_repository.dart';
 import '../../repositories/event_session_repository.dart';
 import '../../repositories/judge_assignment_repository.dart';
+import '../../widgets/apparatus_icon.dart';
 
 class FloorDetailScreen extends ConsumerStatefulWidget {
   final String eventId;
@@ -167,7 +168,11 @@ class _FloorDetailScreenState extends ConsumerState<FloorDetailScreen> {
                                   children: [
                                     Row(
                                       children: [
-                                        Icon(_apparatusIcon(e.key), color: Theme.of(context).colorScheme.primary, size: 18),
+                                        ApparatusIcon(
+                                          apparatus: e.key,
+                                          size: 18,
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
                                         const SizedBox(width: 8),
                                         Text(e.key, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                                       ],
@@ -257,7 +262,11 @@ class _FloorDetailScreenState extends ConsumerState<FloorDetailScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(_apparatusIcon(apparatus), size: iconSize, color: Theme.of(context).colorScheme.primary),
+                  ApparatusIcon(
+                    apparatus: apparatus,
+                    size: iconSize,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   const SizedBox(height: 10),
                   Text(
                     apparatus,
@@ -271,21 +280,6 @@ class _FloorDetailScreenState extends ConsumerState<FloorDetailScreen> {
         ),
       ),
     );
-  }
-
-  IconData _apparatusIcon(String? apparatus) {
-    switch (apparatus) {
-      case 'Vault':
-        return Icons.table_chart;
-      case 'Bars':
-        return Icons.event;
-      case 'Beam':
-        return Icons.straighten;
-      case 'Floor':
-        return Icons.dashboard;
-      default:
-        return Icons.category;
-    }
   }
 
   Future<void> _confirmDeleteAssignment(JudgeAssignment a, EventSession session, EventFloor floor) async {
