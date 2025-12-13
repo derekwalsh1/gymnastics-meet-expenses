@@ -220,7 +220,8 @@ class _EventStructureScreenState extends ConsumerState<EventStructureScreen> {
   }
 
   Widget _buildScheduleTable(BuildContext context, List<Map<String, dynamic>> scheduleData, List<EventDay> days, Color podColor) {
-    final dateFormat = DateFormat('EEEE M/d/yyyy');
+    final dayAbbrevFormat = DateFormat('E');  // Mon, Tue, Wed, etc.
+    final shortDateFormat = DateFormat('M/d/yy');
     final timeFormat = DateFormat('h:mm a');
     
     return Table(
@@ -246,15 +247,29 @@ class _EventStructureScreenState extends ConsumerState<EventStructureScreen> {
             ),
             children: [
               Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(8),
                 child: Text(
-                  dateFormat.format(entry['date']),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  'Day ${entry['dayNumber']}',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                   textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(),
-              const SizedBox(),
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  dayAbbrevFormat.format(entry['date']),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  shortDateFormat.format(entry['date']),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+              ),
               const SizedBox(),
               const SizedBox(),
             ],
@@ -266,13 +281,20 @@ class _EventStructureScreenState extends ConsumerState<EventStructureScreen> {
               decoration: BoxDecoration(color: podColor.withOpacity(0.15)),
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                   child: Text(
-                    '${session['name']} - ${timeFormat.format(session['startTime'])}',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    session['name'],
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                  child: Text(
+                    timeFormat.format(session['startTime']),
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                  ),
+                ),
                 const SizedBox(),
                 const SizedBox(),
                 const SizedBox(),
@@ -422,6 +444,7 @@ class _EventStructureScreenState extends ConsumerState<EventStructureScreen> {
       
       scheduleByDay.putIfAbsent(dayKey, () => {
         'date': day.date,
+        'dayNumber': day.dayNumber ?? 0,
         'sessions': <String, Map<String, dynamic>>{},
       });
       
@@ -477,6 +500,7 @@ class _EventStructureScreenState extends ConsumerState<EventStructureScreen> {
       
       result.add({
         'date': dayData['date'],
+        'dayNumber': dayData['dayNumber'],
         'sessions': sessionsList,
       });
     }
