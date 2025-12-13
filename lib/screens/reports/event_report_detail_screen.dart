@@ -942,9 +942,11 @@ class _EventReportDetailScreenState extends ConsumerState<EventReportDetailScree
       try {
         final pdfBytes = await file.readAsBytes();
         if (context.mounted) {
+          // Sanitize filename for sharing
+          final sanitizedEventName = event.name.replaceAll(RegExp(r'[^\w\s-]'), '').replaceAll(' ', '_');
           await Printing.sharePdf(
             bytes: pdfBytes,
-            filename: 'combined_invoices_${event.name}.pdf',
+            filename: 'combined_invoices_$sanitizedEventName.pdf',
           );
           print('[COMBINED] PDF opened for printing/sharing');
         }

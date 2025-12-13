@@ -28,6 +28,7 @@ class _AddEventFloorScreenState extends ConsumerState<AddEventFloorScreen> {
   String? _selectedColor;
 
   final List<Map<String, dynamic>> _floorColors = [
+    {'name': 'Red', 'value': 'red', 'color': Colors.red},
     {'name': 'Blue', 'value': 'blue', 'color': Colors.blue},
     {'name': 'Green', 'value': 'green', 'color': Colors.green},
     {'name': 'White', 'value': 'white', 'color': Colors.white},
@@ -37,6 +38,9 @@ class _AddEventFloorScreenState extends ConsumerState<AddEventFloorScreen> {
     {'name': 'Orange', 'value': 'orange', 'color': Colors.orange},
     {'name': 'Lavender', 'value': 'lavender', 'color': const Color(0xFFE6E6FA)},
     {'name': 'Beige', 'value': 'beige', 'color': const Color(0xFFF5F5DC)},
+    {'name': 'Silver', 'value': 'silver', 'color': const Color(0xFFC0C0C0)},
+    {'name': 'Bronze', 'value': 'bronze', 'color': const Color(0xFFCD7F32)},
+    {'name': 'Gold', 'value': 'gold', 'color': const Color(0xFFFFD700)},
   ];
 
   @override

@@ -237,6 +237,8 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
   Widget _buildFloorColorIcon(EventFloor floor) {
     Color getFloorColor(String colorName) {
       switch (colorName) {
+        case 'red':
+          return Colors.red;
         case 'blue':
           return Colors.blue;
         case 'green':
@@ -255,6 +257,12 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
           return const Color(0xFFE6E6FA);
         case 'beige':
           return const Color(0xFFF5F5DC);
+        case 'silver':
+          return const Color(0xFFC0C0C0);
+        case 'bronze':
+          return const Color(0xFFCD7F32);
+        case 'gold':
+          return const Color(0xFFFFD700);
         default:
           return Colors.blue;
       }
@@ -431,9 +439,13 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
             Text(
               '${assignment.judgeAssociation} - ${assignment.judgeLevel}${assignment.role != null ? ' (${assignment.role})' : ''}${assignment.apparatus != null ? ' • ${assignment.apparatus}' : ''}',
               style: const TextStyle(fontSize: 11),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
-            Row(
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
               children: [
                 TextButton.icon(
                   onPressed: () => context.push('/assignments/${assignment.id}/edit?floorId=${floor.id}&sessionId=${session.id}'),
@@ -1083,6 +1095,7 @@ class _EditFloorDialogState extends State<_EditFloorDialog> {
   late String? _selectedColor;
 
   final List<Map<String, dynamic>> _floorColors = [
+    {'name': 'Red', 'value': 'red', 'color': Colors.red},
     {'name': 'Blue', 'value': 'blue', 'color': Colors.blue},
     {'name': 'Green', 'value': 'green', 'color': Colors.green},
     {'name': 'White', 'value': 'white', 'color': Colors.white},
@@ -1092,6 +1105,9 @@ class _EditFloorDialogState extends State<_EditFloorDialog> {
     {'name': 'Orange', 'value': 'orange', 'color': Colors.orange},
     {'name': 'Lavender', 'value': 'lavender', 'color': const Color(0xFFE6E6FA)},
     {'name': 'Beige', 'value': 'beige', 'color': const Color(0xFFF5F5DC)},
+    {'name': 'Silver', 'value': 'silver', 'color': const Color(0xFFC0C0C0)},
+    {'name': 'Bronze', 'value': 'bronze', 'color': const Color(0xFFCD7F32)},
+    {'name': 'Gold', 'value': 'gold', 'color': const Color(0xFFFFD700)},
   ];
 
   @override
@@ -1113,33 +1129,34 @@ class _EditFloorDialogState extends State<_EditFloorDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Edit Floor'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Floor Name',
-              border: OutlineInputBorder(),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Floor Name',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
             ),
-            autofocus: true,
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _notesController,
-            decoration: const InputDecoration(
-              labelText: 'Notes (Optional)',
-              border: OutlineInputBorder(),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _notesController,
+              decoration: const InputDecoration(
+                labelText: 'Notes (Optional)',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
             ),
-            maxLines: 3,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Floor Color',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
+            const SizedBox(height: 16),
+            const Text(
+              'Floor Color',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
             spacing: 12,
             runSpacing: 12,
             children: _floorColors.map((colorData) {
@@ -1172,6 +1189,7 @@ class _EditFloorDialogState extends State<_EditFloorDialog> {
             }).toList(),
           ),
         ],
+        ),
       ),
       actions: [
         TextButton(
@@ -1189,6 +1207,7 @@ class _EditFloorDialogState extends State<_EditFloorDialog> {
             Navigator.pop(context, {
               'name': _nameController.text,
               'notes': _notesController.text,
+              'color': _selectedColor,
             });
           },
           child: const Text('Save'),

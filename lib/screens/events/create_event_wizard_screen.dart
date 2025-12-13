@@ -351,6 +351,7 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
           const SizedBox(height: 16),
           
           TextFormField(
+            key: const Key('event_name_field'),
             controller: _nameController,
             decoration: const InputDecoration(
               labelText: 'Event Name *',
@@ -405,6 +406,7 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
           const SizedBox(height: 16),
 
           TextFormField(
+            key: const Key('venue_name_field'),
             controller: _venueController,
             decoration: const InputDecoration(
               labelText: 'Venue Name *',
@@ -415,6 +417,7 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
           const SizedBox(height: 16),
 
           TextFormField(
+            key: const Key('address_field'),
             controller: _addressController,
             decoration: const InputDecoration(
               labelText: 'Address *',
@@ -447,6 +450,7 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
           const SizedBox(height: 16),
 
           TextFormField(
+            key: const Key('city_field'),
             controller: _cityController,
             decoration: const InputDecoration(
               labelText: 'City *',
@@ -457,6 +461,7 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
           const SizedBox(height: 16),
 
           TextFormField(
+            key: const Key('state_field'),
             controller: _stateController,
             decoration: InputDecoration(
               labelText: _country == 'United States' ? 'State *' : 'State/Province *',
@@ -467,6 +472,7 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
           const SizedBox(height: 16),
 
           TextFormField(
+            key: const Key('zip_field'),
             controller: _zipController,
             decoration: InputDecoration(
               labelText: _country == 'United States' ? 'Zip *' : 'Postal Code *',

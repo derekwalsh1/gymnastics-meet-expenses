@@ -141,22 +141,33 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Events'), findsOneWidget);
     
-    await tester.tap(find.byType(FloatingActionButton));
+    // Tap the Add FAB (not the Import FAB) - use heroTag to distinguish
+    final addFab = find.byWidgetPredicate(
+      (widget) => widget is FloatingActionButton && widget.heroTag == 'add',
+    );
+    expect(addFab, findsOneWidget);
+    await tester.tap(addFab);
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Create Event'), findsOneWidget);
 
-    // Step 1: Basic info
-    await tester.enterText(find.bySemanticsLabel('Event Name *'), uniqueMeetName);
-    await tester.enterText(find.bySemanticsLabel('Venue Name *'), 'Test Venue');
-    await tester.enterText(find.bySemanticsLabel('Address *'), '123 Main St');
-    await tester.enterText(find.bySemanticsLabel('City *'), 'Springfield');
-    await tester.enterText(find.bySemanticsLabel('State *'), 'CA');
-    await tester.enterText(find.bySemanticsLabel('Zip *'), '90210');
-
+    // Step 1: Basic info - using keyed fields for reliability
+    // Helper to tap field to scroll it into view, then enter text
+    Future<void> tapAndEnterText(Key key, String text) async {
+      final field = find.byKey(key);
+      await tester.ensureVisible(field);
+      await tester.pumpAndSettle();
+      await tester.tap(field);
+      await tester.pumpAndSettle();
+      await tester.enterText(field, text);
+      await tester.pumpAndSettle();
+    }
+    
+    await tapAndEnterText(const Key('event_name_field'), uniqueMeetName);
+    
     // Select AAU association from dropdown if available
-    final associationDropdown = find.bySemanticsLabel('Association');
-    if (associationDropdown.evaluate().isNotEmpty) {
-      await tester.tap(associationDropdown);
+    final associationLabel = find.text('Association');
+    if (associationLabel.evaluate().isNotEmpty) {
+      await tester.tap(associationLabel);
       await tester.pumpAndSettle();
       final aauOption = find.text('AAU').last;
       if (aauOption.evaluate().isNotEmpty) {
@@ -164,6 +175,12 @@ void main() {
         await tester.pumpAndSettle();
       }
     }
+    
+    await tapAndEnterText(const Key('venue_name_field'), 'Test Venue');
+    await tapAndEnterText(const Key('address_field'), '123 Main St');
+    await tapAndEnterText(const Key('city_field'), 'Springfield');
+    await tapAndEnterText(const Key('state_field'), 'CA');
+    await tapAndEnterText(const Key('zip_field'), '90210');
 
     // Pick start date (accept default)
     await tester.tap(find.text('Start Date *'));

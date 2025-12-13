@@ -101,7 +101,9 @@ class _MeetExportScreenState extends ConsumerState<MeetExportScreen> {
       }
 
       // Use file_picker to let user save directly (avoids share sheet creating extra .txt file)
-      final fileName = 'meet_export_${_exportResult!.meetName.replaceAll(' ', '_')}.json';
+      // Sanitize filename - remove special characters that aren't valid in filenames
+      final sanitizedName = _exportResult!.meetName.replaceAll(RegExp(r'[^\w\s-]'), '').replaceAll(' ', '_');
+      final fileName = 'meet_export_$sanitizedName.json';
       
       // Read the file bytes (required for Android & iOS)
       final bytes = await sourceFile.readAsBytes();

@@ -1,0 +1,532 @@
+{
+  "judges": [
+    {
+      "firstName": "Abigail",
+      "lastName": "Prouse Sims",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Amy",
+      "lastName": "Heidel",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Becky",
+      "lastName": "Smith",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Bonnie",
+      "lastName": "Crawford",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Carole",
+      "lastName": "Ide",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Cat",
+      "lastName": "Schnoes",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Christina",
+      "lastName": "Anderson",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Connor",
+      "lastName": "Payne",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Dana",
+      "lastName": "Martinez",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "David",
+      "lastName": "Schafer",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Denise",
+      "lastName": "C Lauriat",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Erika",
+      "lastName": "Franklin",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Francis",
+      "lastName": "Weigand",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Gelena",
+      "lastName": "Verucchi",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Heather",
+      "lastName": "Kiser",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Janet",
+      "lastName": "Cochran",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Jenni",
+      "lastName": "Wittenburg",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Jennifer",
+      "lastName": "Anderson",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Jenny",
+      "lastName": "Amos",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Jeri",
+      "lastName": "Foley",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Kacie",
+      "lastName": "Eicholtz",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Kathryn",
+      "lastName": "Murray",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Katie",
+      "lastName": "Kuhlman",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Kevin",
+      "lastName": "Freeman",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Lani",
+      "lastName": "Yosten",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Larysa",
+      "lastName": "Santiago",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Laura",
+      "lastName": "DeFansecoe",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Lauren",
+      "lastName": "Levy",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Laurie",
+      "lastName": "Skelton",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "LeighAnne",
+      "lastName": "Taylor",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Lydia",
+      "lastName": "Messenger",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Marilyn",
+      "lastName": "Blilie",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Mary",
+      "lastName": "Atkinson",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Melissa",
+      "lastName": "Buehrer",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Paige",
+      "lastName": "Callaway",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Rachel",
+      "lastName": "Shaffer",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Rodica",
+      "lastName": "Lazar",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Sandy",
+      "lastName": "Holsaple",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Shannon",
+      "lastName": "Gilbreath",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Sydney",
+      "lastName": "Stapleton",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Tracy",
+      "lastName": "Brewer",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Vered",
+      "lastName": "Danenberg Lerner",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Victoria",
+      "lastName": "Grubic",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    },
+    {
+      "firstName": "Xiao",
+      "lastName": "Du",
+      "notes": "NAWGJ National Level Judge",
+      "contactInfo": null,
+      "certifications": [
+        {
+          "association": "NAWGJ",
+          "level": "National"
+        }
+      ]
+    }
+  ]
+}

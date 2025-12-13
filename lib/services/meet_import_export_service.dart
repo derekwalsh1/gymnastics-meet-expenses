@@ -113,10 +113,14 @@ class MeetImportExportService {
 
       // Save to file
       final exportJson = JsonEncoder.withIndent('  ').convert(exportData);
-      final fileName = 'meet_export_${event.name.replaceAll(' ', '_')}_${DateTime.now().millisecondsSinceEpoch}.json';
+      // Sanitize filename - remove special characters that aren't valid in filenames
+      final sanitizedName = event.name.replaceAll(RegExp(r'[^\w\s-]'), '').replaceAll(' ', '_');
+      final fileName = 'meet_export_${sanitizedName}_${DateTime.now().millisecondsSinceEpoch}.json';
       final filePath = await _getSaveFilePath(fileName);
 
       final file = File(filePath);
+      // Ensure parent directory exists
+      await file.parent.create(recursive: true);
       await file.writeAsString(exportJson);
 
       return MeetExportResult(

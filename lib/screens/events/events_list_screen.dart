@@ -230,7 +230,12 @@ class _EventCard extends StatelessWidget {
               children: [
                 const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
                 const SizedBox(width: 4),
-                Text(dateRange),
+                Expanded(
+                  child: Text(
+                    dateRange,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 2),
