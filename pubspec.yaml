@@ -1,7 +1,7 @@
 name: nawgj_expense_tracker
 description: "A cross-platform expense management app for gymnastics meet managers"
 publish_to: 'none'
-version: 1.1.0+11
+version: 1.1.0+12
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
