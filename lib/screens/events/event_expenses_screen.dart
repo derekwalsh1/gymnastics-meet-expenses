@@ -257,16 +257,32 @@ class _EventExpensesScreenState extends ConsumerState<EventExpensesScreen> {
         return {
           'description': fullDescription,
           'amount': fee.amount,
+          'feeType': fee.feeType.name,
         };
       }).toList();
 
       // Prepare expense breakdown
       final dateFormat = DateFormat('MMM d, yyyy');
       final expenseBreakdown = expenses.map((expense) {
+        String description = expense.description;
+        
+        // Add mileage details
+        if (expense.category == ExpenseCategory.mileage && 
+            expense.distance != null && 
+            expense.mileageRate != null) {
+          description += ' (${expense.distance} miles @ \$${expense.mileageRate!.toStringAsFixed(2)}/mile)';
+        }
+        
+        // Add lodging nights
+        if (expense.category == ExpenseCategory.lodging && 
+            expense.numberOfNights != null) {
+          description += ' (${expense.numberOfNights} night${expense.numberOfNights == 1 ? '' : 's'})';
+        }
+        
         return {
           'date': dateFormat.format(expense.date),
           'category': _formatCategory(expense.category.name),
-          'description': expense.description,
+          'description': description,
           'amount': expense.amount,
         };
       }).toList();

@@ -580,7 +580,8 @@ class PdfService {
           border: pw.TableBorder.all(color: PdfColors.grey400),
           columnWidths: {
             0: const pw.FlexColumnWidth(4),
-            1: const pw.FlexColumnWidth(1),
+            1: const pw.FlexColumnWidth(1.5),
+            2: const pw.FlexColumnWidth(1),
           },
           children: [
             pw.TableRow(
@@ -592,17 +593,27 @@ class PdfService {
                 ),
                 pw.Padding(
                     padding: const pw.EdgeInsets.all(4),
+                  child: pw.Text('Type', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
+                ),
+                pw.Padding(
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text('Amount', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9), textAlign: pw.TextAlign.right),
                 ),
               ],
             ),
             ...feeBreakdown.map((fee) {
               final description = (fee['description'] as String?) ?? '';
+              final feeTypeStr = fee['feeType'] as String? ?? 'sessionRate';
+              final feeTypeDisplay = _formatFeeType(feeTypeStr);
               return pw.TableRow(
                 children: [
                   pw.Padding(
                       padding: const pw.EdgeInsets.all(4),
                     child: pw.Text(description, style: const pw.TextStyle(fontSize: 8)),
+                  ),
+                  pw.Padding(
+                      padding: const pw.EdgeInsets.all(4),
+                    child: pw.Text(feeTypeDisplay, style: const pw.TextStyle(fontSize: 8)),
                   ),
                   pw.Padding(
                       padding: const pw.EdgeInsets.all(4),
@@ -620,6 +631,10 @@ class PdfService {
                 ),
                 pw.Padding(
                     padding: const pw.EdgeInsets.all(4),
+                  child: pw.Text('', style: const pw.TextStyle(fontSize: 9)),
+                ),
+                pw.Padding(
+                    padding: const pw.EdgeInsets.all(4),
                   child: pw.Text('\$${totalFees.toStringAsFixed(2)}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9), textAlign: pw.TextAlign.right),
                 ),
               ],
@@ -628,6 +643,21 @@ class PdfService {
         ),
       ],
     );
+  }
+
+  String _formatFeeType(String feeType) {
+    switch (feeType) {
+      case 'sessionRate':
+        return 'Session Rate';
+      case 'meetReferee':
+        return 'Meet Referee';
+      case 'headJudge':
+        return 'Head Judge';
+      case 'custom':
+        return 'Custom';
+      default:
+        return feeType;
+    }
   }
 
   pw.Widget _buildInvoiceExpensesSection(List<Map<String, dynamic>> expenseBreakdown, double totalExpenses) {
