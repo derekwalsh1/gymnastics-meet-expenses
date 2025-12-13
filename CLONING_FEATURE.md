@@ -24,7 +24,7 @@ The cloning feature allows users to quickly duplicate event days, sessions, and 
 - All floors within each session
 - (Optional) Judge assignments to each floor
 - Session times and details
-- Floor names and configuration
+- Floor names, colors, and configuration
 
 ### 2. Clone Session
 **When to use:** A day has multiple sessions with the same floor layout.
@@ -38,7 +38,7 @@ The cloning feature allows users to quickly duplicate event days, sessions, and 
 **What gets cloned:**
 - All floors within the session
 - (Optional) Judge assignments to each floor
-- Floor names and configuration
+- Floor names, colors, and configuration
 
 ### 3. Clone Floor
 **When to use:** Need multiple floors with the same apparatus or setup.

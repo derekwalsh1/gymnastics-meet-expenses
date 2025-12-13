@@ -13,20 +13,20 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #1ABC9C 0%, #3498DB 100%);
+            line-height: 1.7;
+            color: #1a1a1a;
+            background: #f5f7fa;
             min-height: 100vh;
             padding: 20px;
         }
         
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            padding: 60px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
         }
         
         .header {
@@ -37,13 +37,13 @@
         .app-icon {
             width: 100px;
             height: 100px;
-            margin: 0 auto 20px;
-            background: linear-gradient(135deg, #1ABC9C 0%, #3498DB 100%);
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
         }
         
         .app-icon-text {
@@ -53,119 +53,230 @@
         }
         
         h1 {
-            color: #2C3E50;
-            margin-bottom: 10px;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            font-weight: 700;
+            font-size: 36px;
         }
         
         .tagline {
-            color: #7F8C8D;
+            color: #6b7280;
             font-size: 18px;
+            font-weight: 400;
         }
         
         .section {
-            margin: 30px 0;
+            margin: 48px 0;
         }
         
         h2 {
-            color: #2980B9;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #ECF0F1;
-            padding-bottom: 10px;
+            color: #1a1a1a;
+            margin-bottom: 24px;
+            font-weight: 700;
+            font-size: 28px;
+            letter-spacing: -0.02em;
         }
         
         .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 32px;
         }
         
         .feature {
-            padding: 15px;
-            background: #F8F9FA;
-            border-radius: 8px;
-            border-left: 4px solid #3498DB;
+            padding: 24px;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+        
+        .feature:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: #3b82f6;
         }
         
         .feature h3 {
-            color: #2C3E50;
-            margin-bottom: 8px;
-            font-size: 16px;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            font-size: 17px;
+            font-weight: 600;
         }
         
         .feature p {
-            color: #7F8C8D;
+            color: #4b5563;
             font-size: 14px;
+            line-height: 1.6;
         }
         
         .contact {
-            background: #ECF0F1;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
+            background: #eff6ff;
+            padding: 24px;
+            border-radius: 12px;
+            margin-top: 24px;
+            border: 1px solid #dbeafe;
         }
         
         .contact a {
-            color: #2980B9;
+            color: #2563eb;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
         }
         
         .contact a:hover {
-            text-decoration: underline;
+            color: #1d4ed8;
+            text-decoration: none;
         }
         
         .faq {
-            margin-top: 20px;
+            margin-top: 32px;
         }
         
         .faq-item {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .faq-item:last-child {
+            border-bottom: none;
         }
         
         .faq-question {
             font-weight: 600;
-            color: #2C3E50;
+            color: #1a1a1a;
             margin-bottom: 8px;
+            font-size: 16px;
         }
         
         .faq-answer {
-            color: #555;
-            padding-left: 15px;
+            color: #4b5563;
+            padding-left: 0;
+            line-height: 1.7;
         }
         
         .download {
             text-align: center;
-            margin: 40px 0;
+            margin: 48px 0 40px 0;
         }
         
         .download-button {
             display: inline-block;
-            background: linear-gradient(135deg, #1ABC9C 0%, #3498DB 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
-            padding: 15px 40px;
-            border-radius: 8px;
+            padding: 16px 48px;
+            border-radius: 12px;
             text-decoration: none;
             font-weight: 600;
-            font-size: 18px;
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-            transition: transform 0.2s;
+            font-size: 17px;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+            transition: all 0.2s ease;
         }
         
         .download-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
         }
         
         .footer {
             text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #ECF0F1;
-            color: #7F8C8D;
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
             font-size: 14px;
+        }        
+        p {
+            color: #374151;
+            line-height: 1.7;
+            margin-bottom: 16px;
         }
-    </style>
+        
+        ul {
+            margin-top: 16px;
+        }
+        
+        li {
+            margin-bottom: 12px;
+        }
+        
+        strong {
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+        
+        h3 {
+            color: #1a1a1a;
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 32px;
+            margin-bottom: 16px;
+        }
+        
+        h4 {
+            color: #374151;
+            font-size: 17px;
+            font-weight: 600;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .tip-box {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            color: #1f2937;
+        }
+        
+        ol {
+            margin-top: 16px;
+            padding-left: 24px;
+        }
+        
+        ol li {
+            margin-bottom: 16px;
+        }    </style>
 </head>
 <body>
     <div class="container">
@@ -183,7 +294,23 @@
         
         <div class="section">
             <h2>About</h2>
-            <p>Gymnastics Meet Expenses is a comprehensive expense tracking solution designed specifically for gymnastics meet managers, judges, and event coordinators. Streamline your expense management with professional invoicing, detailed reporting, and multi-event support.</p>
+            <p><strong>Gymnastics Meet Expenses</strong> is a production-ready iOS application designed specifically for gymnastics judges, meet directors, and association administrators who need to manage complex meet finances and judging assignments.</p>
+            
+            <p>Whether you're tracking expenses for a single local meet or managing judges across multiple national competitions, this app provides a complete solution for financial tracking, reporting, and judge assignment management.</p>
+            
+            <h3>What Makes It Special</h3>
+            <ul style="color: #555; line-height: 1.8;">
+                <li><strong>Complex Meet Structures:</strong> Handle multi-day events with multiple sessions, floors, and apparatus rotations</li>
+                <li><strong>Visual Organization:</strong> Use custom floor colors (choose from 9 colors) to instantly identify different competition areas</li>
+                <li><strong>Complete Financial Tracking:</strong> Track all expense categories with automatic mileage calculations, per diem rates, and itemized invoicing</li>
+                <li><strong>Judge Certification Management:</strong> Track multiple certification levels per judge and assign them to appropriate sessions</li>
+                <li><strong>Data Portability:</strong> Import/export complete meets as JSON files for backup, transfer, or sharing with other users</li>
+                <li><strong>Time-Saving Features:</strong> Clone event structures to quickly set up similar meets without rebuilding from scratch</li>
+                <li><strong>International Support:</strong> Full support for international addresses and multiple gymnastics associations</li>
+                <li><strong>Privacy Focused:</strong> All data stays on your device with optional iCloud backup. No accounts, no tracking, no cloud storage required</li>
+            </ul>
+            
+            <p style="margin-top: 20px;"><strong>Current Version 1.1.1</strong> includes visual analytics with interactive charts, responsive design optimized for all iOS devices, and streamlined CSV exports for integration with external accounting systems.</p>
         </div>
         
         <div class="section">
@@ -191,29 +318,501 @@
             <div class="features">
                 <div class="feature">
                     <h3>📊 Expense Tracking</h3>
-                    <p>Track mileage, per diem, hotel, and miscellaneous costs with detailed categorization</p>
+                    <p>Track all meet expenses with 6 categories: Mileage, Airfare, Parking, Meals & Per Diem, Lodging, and Other</p>
                 </div>
                 <div class="feature">
                     <h3>📄 Professional Invoices</h3>
-                    <p>Generate detailed PDF invoices with itemized expenses and session details</p>
+                    <p>Generate detailed PDF invoices with itemized expenses, fees, and session details. Export to CSV for external processing</p>
+                </div>
+                <div class="feature">
+                    <h3>🎨 Visual Floor Coding</h3>
+                    <p>Assign custom colors to floors for easy identification. Choose from 9 colors including blue, green, pink, yellow, and more</p>
                 </div>
                 <div class="feature">
                     <h3>📅 Multi-Event Support</h3>
-                    <p>Manage expenses across multiple events and gymnastics associations</p>
+                    <p>Import/export complete meets, clone event structures, manage multiple associations with international address support</p>
                 </div>
                 <div class="feature">
-                    <h3>👥 Judge Assignments</h3>
-                    <p>Track judge assignments for complex meet structures with sessions and rotations</p>
+                    <h3>👥 Judge Management</h3>
+                    <p>Track multiple certification levels per judge, assign to specific floors and apparatus with visual color coding</p>
                 </div>
                 <div class="feature">
-                    <h3>📈 Detailed Reports</h3>
-                    <p>Export comprehensive expense reports and summaries as professional PDFs</p>
+                    <h3>📈 Visual Analytics</h3>
+                    <p>Interactive pie charts for expense distribution and bar charts for judge earnings comparison</p>
+                </div>
+                <div class="feature">
+                    <h3>💰 Fee Management</h3>
+                    <p>Track session rates, hourly rates, and role-based bonuses (Meet Referee, Head Judge) with automatic calculations</p>
                 </div>
                 <div class="feature">
                     <h3>🔒 Privacy First</h3>
-                    <p>All data stored locally on your device with optional iCloud backup</p>
+                    <p>All data stored locally on your device with optional iCloud backup. No account required, no tracking</p>
                 </div>
             </div>
+        </div>
+        
+        <div class="section">
+            <h2>Getting Started Guide</h2>
+            
+            <h3>First-Time Setup</h3>
+            <p>When you first launch the app, you'll see the home screen with quick access to Events and Judges. Here's how to set up your first meet:</p>
+            
+            <h4><span class="step-number">1</span> Create Your Association</h4>
+            <p>Navigate to <strong>Settings → Associations → Add Association</strong>. Enter your association details including name, address, and contact information. The app supports both US and international addresses with flexible formatting.</p>
+            
+            <h4><span class="step-number">2</span> Add Judges</h4>
+            <p>Go to <strong>Judges → Add Judge</strong>. Enter judge information including name, email, and address. You can add multiple certification levels per judge (e.g., Level 8, Level 9, Level 10, Xcel). This allows you to filter and assign judges appropriately.</p>
+            
+            <div class="tip-box">
+                <strong>💡 Pro Tip:</strong> Add all your judges before creating events. This makes assignment much faster during event setup.
+            </div>
+            
+            <h4><span class="step-number">3</span> Create Your First Event</h4>
+            <p>Tap <strong>Events → +</strong> to create a new event. Enter basic information:</p>
+            <ul>
+                <li><strong>Event Name:</strong> e.g., "State Championship 2025"</li>
+                <li><strong>Location:</strong> Venue name and address</li>
+                <li><strong>Date Range:</strong> Start and end dates for multi-day events</li>
+                <li><strong>Association:</strong> Select from your saved associations</li>
+            </ul>
+            
+            <h4><span class="step-number">4</span> Build Event Structure</h4>
+            <p>After creating the event, build your meet structure:</p>
+            <ul>
+                <li><strong>Days:</strong> Add one or more competition days</li>
+                <li><strong>Sessions:</strong> Within each day, add sessions (e.g., "Level 8 Morning", "Level 9 Afternoon")</li>
+                <li><strong>Floors:</strong> Add floors to each session and assign colors for visual identification</li>
+            </ul>
+            
+            <div class="info-box">
+                <strong>📘 Note:</strong> Floor colors are purely for visual organization. Choose colors that make sense for your setup (e.g., blue for Floor 1, green for Floor 2).
+            </div>
+            
+            <h3>Complete Workflow Example</h3>
+            <p>Here's a complete workflow for setting up and managing a meet:</p>
+            
+            <ol>
+                <li><strong>Pre-Meet Setup:</strong> Create event structure with days, sessions, and floors. Assign floor colors for easy identification.</li>
+                <li><strong>Judge Assignment:</strong> Assign judges to specific sessions and floors. The app shows colored floor icons for quick reference.</li>
+                <li><strong>Fee Configuration:</strong> Set session rates (e.g., $50 per session) or hourly rates (e.g., $25/hour). Add role bonuses for Meet Referee ($50) or Head Judge ($25).</li>
+                <li><strong>During Meet:</strong> Track expenses as they occur - mileage, meals, parking, lodging, etc.</li>
+                <li><strong>Post-Meet:</strong> Generate expense reports and invoices. Export as PDF or CSV for accounting systems.</li>
+            </ol>
+        </div>
+        
+        <div class="section">
+            <h2>Detailed Feature Guide</h2>
+            
+            <h3>Event Management</h3>
+            
+            <h4>Creating Complex Meet Structures</h4>
+            <p>The app supports hierarchical event structures: <code>Event → Days → Sessions → Floors</code></p>
+            
+            <p><strong>Example Structure:</strong></p>
+            <ul>
+                <li>📅 <strong>Day 1 - Friday</strong>
+                    <ul style="margin-top: 8px;">
+                        <li>Session 1: Level 8 (3:00 PM - 6:00 PM)
+                            <ul style="margin-top: 4px;">
+                                <li>🔵 Floor 1</li>
+                                <li>🟢 Floor 2</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li>📅 <strong>Day 2 - Saturday</strong>
+                    <ul style="margin-top: 8px;">
+                        <li>Session 1: Level 9 (9:00 AM - 12:00 PM)</li>
+                        <li>Session 2: Level 10 (1:00 PM - 4:00 PM)</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <h4>Floor Color System</h4>
+            <p>Assign colors when creating or editing floors. Available colors:</p>
+            <ul>
+                <li>🔵 Blue • 🟢 Green • ⚪ White • ⚫ Black • 🟣 Pink</li>
+                <li>🟡 Yellow • 🟠 Orange • 🟣 Lavender • 🟤 Beige</li>
+            </ul>
+            <p>Colors appear throughout the app in floor lists, assignment screens, and reports, making it easy to identify floors at a glance.</p>
+            
+            <h4>Cloning Events</h4>
+            <p>Save time by cloning similar events. When you clone:</p>
+            <ul>
+                <li>✅ All days, sessions, and floors are copied with their colors</li>
+                <li>✅ Event structure and configuration preserved</li>
+                <li>❌ Judge assignments are NOT copied (assign fresh for the new meet)</li>
+                <li>❌ Expenses are NOT copied</li>
+            </ul>
+            
+            <div class="tip-box">
+                <strong>💡 Pro Tip:</strong> Create a template event for your typical meet structure, then clone it for each new meet. Just update dates and judge assignments.
+            </div>
+            
+            <h3>Judge Assignment</h3>
+            
+            <h4>Managing Judge Certifications</h4>
+            <p>Each judge can have multiple certification levels. When adding certifications:</p>
+            <ul>
+                <li>Use standard level names: <code>Level 8</code>, <code>Level 9</code>, <code>Level 10</code>, <code>Xcel Gold</code>, etc.</li>
+                <li>Add expiration dates to track when certifications need renewal</li>
+                <li>The app filters judges by certification when assigning to sessions</li>
+            </ul>
+            
+            <h4>Assignment Process</h4>
+            <p>From the event detail screen:</p>
+            <ol>
+                <li>Tap on a session to see floors</li>
+                <li>Tap <strong>Assign Judges</strong></li>
+                <li>Select judges and assign them to specific floors</li>
+                <li>Colored floor icons help you quickly identify assignments</li>
+            </ol>
+            
+            <div class="warning-box">
+                <strong>⚠️ Important:</strong> Double-check judge assignments before finalizing. Once fees are calculated, changing assignments may require manual adjustments.
+            </div>
+            
+            <h3>Expense Tracking</h3>
+            
+            <h4>Expense Categories</h4>
+            <p>Track six types of expenses:</p>
+            
+            <p><strong>1. Mileage</strong> - Automatic calculation based on distance and rate</p>
+            <ul>
+                <li>Enter start and end locations (or use current location)</li>
+                <li>Set mileage rate (default: $0.67/mile - IRS 2024 rate)</li>
+                <li>Round-trip option doubles the distance automatically</li>
+            </ul>
+            
+            <p><strong>2. Airfare</strong> - Flight costs</p>
+            <ul>
+                <li>Track flight number, departure/arrival airports</li>
+                <li>Attach receipts using camera or photo library</li>
+            </ul>
+            
+            <p><strong>3. Parking</strong> - Parking fees at venue or airport</p>
+            <ul>
+                <li>Enter location and amount</li>
+                <li>Capture parking receipt photos</li>
+            </ul>
+            
+            <p><strong>4. Meals & Per Diem</strong> - Food and daily allowances</p>
+            <ul>
+                <li>Track individual meals or daily per diem amounts</li>
+                <li>Common per diem: $50-75/day for multi-day meets</li>
+            </ul>
+            
+            <p><strong>5. Lodging</strong> - Hotel or accommodation costs</p>
+            <ul>
+                <li>Enter hotel name, check-in/check-out dates</li>
+                <li>Track nightly rate and total cost</li>
+            </ul>
+            
+            <p><strong>6. Other</strong> - Miscellaneous expenses</p>
+            <ul>
+                <li>Registration fees, equipment, supplies, etc.</li>
+                <li>Add descriptive notes for clarity</li>
+            </ul>
+            
+            <h3>Fees and Payments</h3>
+            
+            <h4>Fee Structure Options</h4>
+            <p>The app supports flexible fee structures:</p>
+            
+            <p><strong>Session-Based Fees:</strong></p>
+            <ul>
+                <li>Set a flat rate per session (e.g., $50/session)</li>
+                <li>Judges are paid the session rate regardless of hours</li>
+                <li>Best for: Standard competitions with consistent session lengths</li>
+            </ul>
+            
+            <p><strong>Hourly Fees:</strong></p>
+            <ul>
+                <li>Set an hourly rate (e.g., $25/hour)</li>
+                <li>Enter actual hours worked per session</li>
+                <li>Best for: Variable-length sessions or partial-day assignments</li>
+            </ul>
+            
+            <p><strong>Role Bonuses:</strong></p>
+            <ul>
+                <li><strong>Meet Referee:</strong> Additional fee (e.g., $50) for head official</li>
+                <li><strong>Head Judge:</strong> Additional fee (e.g., $25) for floor lead</li>
+                <li>Bonuses are added to base session/hourly rate</li>
+            </ul>
+            
+            <h4>Fee Calculation Example</h4>
+            <div class="info-box">
+                <strong>Example:</strong> Judge works 3 sessions at $50/session, plus Meet Referee bonus ($50)<br>
+                <strong>Calculation:</strong> (3 × $50) + $50 = $200 total
+            </div>
+            
+            <h3>Reports and Exports</h3>
+            
+            <h4>Event Financial Reports (PDF)</h4>
+            <p>Generate comprehensive financial reports showing:</p>
+            <ul>
+                <li>Complete expense breakdown by category with pie chart</li>
+                <li>Judge fees breakdown by judge with bar chart</li>
+                <li>Session-by-session details</li>
+                <li>Grand totals and summary statistics</li>
+            </ul>
+            
+            <h4>Judge Invoices (PDF)</h4>
+            <p>Professional invoices for each judge including:</p>
+            <ul>
+                <li>Association letterhead information</li>
+                <li>Judge contact details</li>
+                <li>Itemized session list with dates, times, and fees</li>
+                <li>Expense reimbursements by category</li>
+                <li>Total amount due</li>
+            </ul>
+            
+            <h4>CSV Exports</h4>
+            <p>Export data for external accounting systems:</p>
+            <ul>
+                <li><strong>Fees CSV:</strong> Judge name, session details, rates, amounts</li>
+                <li><strong>Expenses CSV:</strong> Date, category, description, amount</li>
+                <li>Import into Excel, QuickBooks, or other accounting software</li>
+            </ul>
+            
+            <div class="tip-box">
+                <strong>💡 Pro Tip:</strong> Use CSV exports to integrate with your association's accounting system. The streamlined format is designed for easy import.
+            </div>
+            
+            <h3>Import/Export Meets</h3>
+            
+            <h4>Backing Up Data</h4>
+            <p>Export complete meets as JSON files:</p>
+            <ol>
+                <li>Navigate to Events list</li>
+                <li>Tap the Import button (upload icon)</li>
+                <li>Select <strong>Export Meet</strong></li>
+                <li>Choose the meet to export</li>
+                <li>Save to Files, iCloud Drive, or share via AirDrop/email</li>
+            </ol>
+            
+            <p><strong>What's included in exports:</strong></p>
+            <ul>
+                <li>✅ Complete event structure (days, sessions, floors with colors)</li>
+                <li>✅ All judge assignments</li>
+                <li>✅ All expenses with receipts</li>
+                <li>✅ Fee configuration and calculations</li>
+            </ul>
+            
+            <h4>Transferring to Another Device</h4>
+            <ol>
+                <li>Export meet on original device</li>
+                <li>Transfer JSON file (AirDrop, email, cloud storage)</li>
+                <li>On new device: <strong>Events → Import → Select JSON file</strong></li>
+                <li>Meet is recreated with all data intact</li>
+            </ol>
+            
+            <div class="warning-box">
+                <strong>⚠️ Note:</strong> Judges referenced in the meet must exist on the destination device. Import judges first, then import meets.
+            </div>
+            
+            <h4>Sharing with Other Users</h4>
+            <p>You can share meet templates with colleagues:</p>
+            <ul>
+                <li>Export a meet from your device</li>
+                <li>Share the JSON file via email or cloud storage</li>
+                <li>Recipient imports the meet on their device</li>
+                <li>They'll need to reassign judges from their own judge list</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>Tips and Tricks</h2>
+            
+            <h3>Efficiency Tips</h3>
+            
+            <h4>🚀 Speed Up Event Creation</h4>
+            <ul>
+                <li><strong>Use Templates:</strong> Create a standard meet template, then clone it for new events</li>
+                <li><strong>Batch Add Judges:</strong> Add all judges before creating events</li>
+                <li><strong>Default Rates:</strong> Set up your standard session rate in the first event, then clone for consistency</li>
+            </ul>
+            
+            <h4>📊 Better Reporting</h4>
+            <ul>
+                <li><strong>Consistent Naming:</strong> Use consistent session names (e.g., "L8 AM", "L8 PM") for easier tracking across meets</li>
+                <li><strong>Detailed Descriptions:</strong> Add notes to expenses for better record-keeping</li>
+                <li><strong>Capture Receipts:</strong> Take photos of receipts immediately to avoid losing them</li>
+            </ul>
+            
+            <h4>🎨 Visual Organization</h4>
+            <ul>
+                <li><strong>Color Coding Strategy:</strong> Use consistent colors across meets (e.g., Blue always = Floor 1)</li>
+                <li><strong>Floor Naming:</strong> Include apparatus in floor names (e.g., "Floor 1 - Vault & Bars")</li>
+            </ul>
+            
+            <h3>Common Workflows</h3>
+            
+            <h4>Scenario 1: Last-Minute Judge Change</h4>
+            <ol>
+                <li>Go to event → session → floor</li>
+                <li>Tap on judge assignment</li>
+                <li>Remove old judge, assign new judge</li>
+                <li>Fee calculations update automatically</li>
+            </ol>
+            
+            <h4>Scenario 2: Adding Expenses During Meet</h4>
+            <ol>
+                <li>Keep the app handy during the meet</li>
+                <li>Add expenses as they occur (parking, meals, etc.)</li>
+                <li>Use camera to capture receipts immediately</li>
+                <li>Review expenses after each day</li>
+            </ol>
+            
+            <h4>Scenario 3: Quarterly Association Reports</h4>
+            <ol>
+                <li>Filter events by date range</li>
+                <li>Export each event's financial report (PDF)</li>
+                <li>Export combined CSV for all events</li>
+                <li>Import CSV into your accounting system</li>
+            </ol>
+            
+            <h3>Best Practices</h3>
+            
+            <h4>Data Management</h4>
+            <ul>
+                <li>✅ <strong>Regular Backups:</strong> Export meets monthly to iCloud Drive or external storage</li>
+                <li>✅ <strong>Archive Old Events:</strong> Delete events from 2+ years ago after exporting</li>
+                <li>✅ <strong>Update Judge Info:</strong> Keep judge certifications and contact info current</li>
+                <li>✅ <strong>Review Before Finalizing:</strong> Double-check all assignments and fees before generating invoices</li>
+            </ul>
+            
+            <h4>Financial Accuracy</h4>
+            <ul>
+                <li>📝 <strong>Verify Rates:</strong> Confirm session rates match your association's payment schedule</li>
+                <li>📝 <strong>Track Receipt Numbers:</strong> Add receipt/confirmation numbers in expense notes</li>
+                <li>📝 <strong>Round Appropriately:</strong> Use consistent rounding (e.g., mileage to 2 decimal places)</li>
+                <li>📝 <strong>Keep Paper Backups:</strong> Print important invoices for physical records</li>
+            </ul>
+            
+            <h4>Judge Assignment</h4>
+            <ul>
+                <li>👥 <strong>Check Availability First:</strong> Confirm judge availability before assigning</li>
+                <li>👥 <strong>Respect Certifications:</strong> Only assign judges to levels they're certified for</li>
+                <li>👥 <strong>Rotate Floor Assignments:</strong> Give judges variety across different floors/apparatus</li>
+                <li>👥 <strong>Communicate Changes:</strong> If you change assignments, notify judges promptly</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>Troubleshooting & Common Issues</h2>
+            
+            <h3>Import/Export Issues</h3>
+            
+            <h4>Q: Import fails with "Invalid JSON format" error</h4>
+            <p><strong>Solution:</strong> The JSON file may be corrupted. Try:</p>
+            <ul>
+                <li>Re-export the meet from the original device</li>
+                <li>Transfer using a different method (try AirDrop if you used email)</li>
+                <li>Open the JSON file in a text editor to verify it's valid JSON</li>
+            </ul>
+            
+            <h4>Q: Meet imports but judges are missing</h4>
+            <p><strong>Solution:</strong> Judges are stored separately from meets. Import judges first:</p>
+            <ol>
+                <li>On original device: Export judges if available, or note judge details</li>
+                <li>On new device: Manually add judges with matching names</li>
+                <li>Then import the meet - judge assignments will link correctly</li>
+            </ol>
+            
+            <h4>Q: Export succeeds but can't find the file</h4>
+            <p><strong>Solution:</strong> Check these locations:</p>
+            <ul>
+                <li>Files app → On My iPhone → Gymnastics Meet Expenses</li>
+                <li>Files app → iCloud Drive → Downloads</li>
+                <li>Use the Files app search to look for <code>.json</code> files</li>
+            </ul>
+            
+            <h3>Data & Calculation Issues</h3>
+            
+            <h4>Q: Fee totals seem incorrect</h4>
+            <p><strong>Solution:</strong> Verify your fee structure:</p>
+            <ul>
+                <li>Check if using session-based or hourly rates</li>
+                <li>Verify number of sessions/hours entered</li>
+                <li>Look for role bonuses (Meet Referee, Head Judge) that add to total</li>
+                <li>Tap into individual judge fees to see detailed breakdown</li>
+            </ul>
+            
+            <h4>Q: Mileage calculation is wrong</h4>
+            <p><strong>Solution:</strong> Check these settings:</p>
+            <ul>
+                <li>Verify mileage rate (default: $0.67/mile)</li>
+                <li>Check if round-trip is enabled (doubles the distance)</li>
+                <li>Ensure addresses are entered correctly</li>
+                <li>Try entering distance manually if automatic calculation fails</li>
+            </ul>
+            
+            <h4>Q: Changes to event structure not saving</h4>
+            <p><strong>Solution:</strong> Make sure you're tapping Save/Done buttons:</p>
+            <ul>
+                <li>Each edit screen has a Save or Done button - don't just swipe back</li>
+                <li>If you force-quit the app mid-edit, changes may be lost</li>
+                <li>Wait for the save animation to complete before navigating away</li>
+            </ul>
+            
+            <h3>Display & Interface Issues</h3>
+            
+            <h4>Q: Floor colors not showing</h4>
+            <p><strong>Solution:</strong></p>
+            <ul>
+                <li>Make sure you assigned a color when creating/editing the floor</li>
+                <li>Try editing the floor and reselecting the color</li>
+                <li>If using an older meet, floors may need colors assigned (they default to blue)</li>
+            </ul>
+            
+            <h4>Q: Text is cut off or overlapping</h4>
+            <p><strong>Solution:</strong></p>
+            <ul>
+                <li>Check your iOS text size setting: Settings → Display & Brightness → Text Size</li>
+                <li>The app supports Dynamic Type but very large text may cause issues</li>
+                <li>Try rotating to landscape mode for more space</li>
+                <li>Report persistent layout issues to support</li>
+            </ul>
+            
+            <h4>Q: PDF reports not generating</h4>
+            <p><strong>Solution:</strong> Check these items:</p>
+            <ul>
+                <li>Ensure the event has all required data (dates, associations, etc.)</li>
+                <li>Try closing and reopening the app</li>
+                <li>Check available storage space on your device</li>
+                <li>Try generating for a smaller date range if the report is very large</li>
+            </ul>
+            
+            <h3>iCloud Sync Issues</h3>
+            
+            <h4>Q: Data not syncing between devices</h4>
+            <p><strong>Note:</strong> The app uses local storage with optional iCloud backup. To transfer data between devices:</p>
+            <ul>
+                <li>Use the Import/Export feature for meets</li>
+                <li>Judges and associations must be manually recreated or exported/imported</li>
+                <li>iCloud backup is for disaster recovery, not real-time sync</li>
+            </ul>
+            
+            <h4>Q: How do I enable iCloud backup?</h4>
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Go to iOS Settings → [Your Name] → iCloud</li>
+                <li>Ensure iCloud Drive is enabled</li>
+                <li>Scroll down and enable for "Gymnastics Meet Expenses"</li>
+                <li>The app will backup automatically to iCloud</li>
+            </ol>
+            
+            <h3>Performance Issues</h3>
+            
+            <h4>Q: App is slow with many events</h4>
+            <p><strong>Solution:</strong></p>
+            <ul>
+                <li>Archive old events by exporting then deleting them</li>
+                <li>Keep active events under 50 for best performance</li>
+                <li>Try restarting the app</li>
+                <li>Restart your device if issues persist</li>
+            </ul>
         </div>
         
         <div class="section">
@@ -221,23 +820,63 @@
             <div class="faq">
                 <div class="faq-item">
                     <div class="faq-question">Q: Is my data secure?</div>
-                    <div class="faq-answer">A: Yes! All your data is stored locally on your device. We don't collect or store any of your financial information on external servers.</div>
+                    <div class="faq-answer">A: Yes! All your data is stored locally on your device using iOS's secure SQLite database. We don't collect, transmit, or store any of your financial information on external servers. No analytics, no tracking, no cloud database.</div>
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">Q: Can I use this for multiple associations?</div>
-                    <div class="faq-answer">A: Absolutely! The app supports unlimited associations, and you can easily switch between them.</div>
+                    <div class="faq-answer">A: Absolutely! The app supports unlimited associations. Each association can have its own address, contact information, and letterhead details. Easily switch between associations when creating events.</div>
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">Q: Does it work on both iPhone and iPad?</div>
-                    <div class="faq-answer">A: Yes! The app is optimized for both iPhone and iPad, supporting portrait and landscape orientations.</div>
+                    <div class="faq-answer">A: Yes! The app is universal and optimized for both iPhone and iPad. It supports portrait and landscape orientations with responsive layouts that adapt to your screen size.</div>
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">Q: Can I export my invoices and reports?</div>
-                    <div class="faq-answer">A: Yes! You can generate professional PDF invoices and reports, then share them via email or save to Files.</div>
+                    <div class="faq-answer">A: Yes! You can generate professional PDF invoices and financial reports, then share them via email, Messages, AirDrop, or save to Files. You can also export data as CSV files for integration with accounting software like QuickBooks or Excel.</div>
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">Q: Do I need an account to use the app?</div>
-                    <div class="faq-answer">A: No account required! The app works completely offline with all data stored on your device.</div>
+                    <div class="faq-answer">A: No account required! The app works completely offline with all data stored on your device. No registration, no login, no passwords to remember.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: Can I backup my meets?</div>
+                    <div class="faq-answer">A: Yes! You can export complete meets as JSON files for backup or transfer to another device. Save to iCloud Drive, Dropbox, or any file storage service. Import them back anytime to restore your data.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: What are floor colors used for?</div>
+                    <div class="faq-answer">A: Floor colors help you quickly identify different floors visually throughout the app. Choose from 9 colors when creating or editing floors. Colors appear in floor lists, judge assignment screens, and reports, making it easier to track assignments at multi-floor events.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: Can I track expenses for judges at multiple meets simultaneously?</div>
+                    <div class="faq-answer">A: Yes! The app supports unlimited events running concurrently. Each event has its own expense tracking, judge assignments, and reporting. You can easily switch between active meets.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: How does mileage calculation work?</div>
+                    <div class="faq-answer">A: Enter your starting and ending locations, and the app calculates the distance and cost based on your mileage rate (default is IRS standard rate of $0.67/mile). You can enable round-trip to automatically double the distance, or manually enter distance if needed.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: Can I customize fee structures?</div>
+                    <div class="faq-answer">A: Yes! You can use session-based fees (flat rate per session) or hourly fees. Add role bonuses for Meet Referee and Head Judge positions. Each event can have its own fee structure.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: What happens if I delete the app?</div>
+                    <div class="faq-answer">A: Your data will be permanently deleted when you uninstall the app unless you've backed up meets using the export feature. Always export important meets before uninstalling. If you have iCloud backup enabled, some data may be preserved in your iCloud storage.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: Is there a limit to how many judges or events I can create?</div>
+                    <div class="faq-answer">A: No hard limits! However, for best performance, we recommend keeping active events under 50 and active judges under 200. Archive old events by exporting and deleting them after the meet season ends.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: Can I use this for international meets?</div>
+                    <div class="faq-answer">A: Yes! The app supports international addresses with flexible formatting. You can enter addresses for any country. Currency display uses your iOS device's locale settings.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: How do I update judge certifications?</div>
+                    <div class="faq-answer">A: Go to the Judges screen, tap on a judge, then tap "Edit". You can add, remove, or update certification levels and their expiration dates. This helps ensure you're assigning appropriately certified judges to sessions.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Q: Can multiple people collaborate on the same event?</div>
+                    <div class="faq-answer">A: Not in real-time, but you can export an event as JSON and share it with others. They can import it on their device, make changes, then export and share back. This works well for sequential collaboration (e.g., one person creates structure, another assigns judges).</div>
                 </div>
             </div>
         </div>
@@ -274,7 +913,7 @@
         
         <div class="footer">
             <p>&copy; 2025 Gymnastics Meet Expenses. All rights reserved.</p>
-            <p style="margin-top: 5px;">Version 1.0.0</p>
+            <p style="margin-top: 5px;">Version 1.1.1</p>
         </div>
     </div>
 </body>

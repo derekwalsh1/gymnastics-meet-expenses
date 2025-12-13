@@ -61,60 +61,86 @@ flutter run -d android
 flutter run -d chrome
 ```
 
-## Development Roadmap
+## Recent Updates (v1.1.1)
 
-See [PROJECT_PLAN.md](PROJECT_PLAN.md) for the complete project plan.
+### 🎨 Visual Enhancements
+- **Floor Color Customization**: Assign colors to floors for easy visual identification (blue, green, white, black, pink, yellow, orange, lavender, beige)
+- **Responsive Design**: Fixed text clipping on small screens across all views
+- **Streamlined Navigation**: Import and create buttons consolidated in Events screen
 
-### Phase 1: Foundation (Current)
-- ✅ Project structure created
-- ✅ Database schema defined
-- ✅ Core models created
-- ✅ Basic navigation setup
-- 🔄 Judge CRUD operations (Next)
+### 🌍 International Support
+- Country selector in event creation with dynamic field labels
+- Support for international addresses (State/Province, Zip/Postal Code)
+- Default to United States with 9 country options
 
-### Phase 2: Core Features
-- Event creation and management
-- Session/floor structure
-- Judge assignment interface
+### ⚡ Performance & Testing
+- Comprehensive integration tests for complete app flow
+- Optimized test performance (60% faster execution)
+- Enhanced error handling and user feedback
 
-### Phase 3: Expenses
-- Expense tracking with all categories
-- Auto-calculations
-- Receipt photo handling
+### 📊 Data Management
+- Floor colors preserved in meet import/export
+- Improved CSV exports (streamlined columns)
+- Optional descriptions for role-based fees
 
-### Phase 4: Reports & Export
-- PDF generation
-- CSV export
-- Judge import/export
+## Development Status
+
+✅ **Production Ready** - All core features implemented and tested
+
+### Completed Features
+- ✅ Complete judge management with multiple certification levels
+- ✅ Event creation with multi-day, multi-session, multi-floor structures
+- ✅ Judge assignment with apparatus-specific tracking
+- ✅ Comprehensive expense tracking (6 categories)
+- ✅ Fee management (session rates, hourly rates, role-based bonuses)
+- ✅ PDF invoice and report generation
+- ✅ CSV export functionality
+- ✅ Meet import/export for backup and transfer
+- ✅ Event structure cloning
+- ✅ Visual analytics (pie charts, bar charts)
+- ✅ Responsive UI for all screen sizes
+- ✅ Integration testing suite
 
 ## Features
 
 ### 📊 Comprehensive Expense Tracking
-- Track all meet-related expenses with detailed categorization
-- Record mileage, per diem, hotel, and miscellaneous costs
-- Attach receipts and notes to individual expenses
+- Track all meet-related expenses with detailed categorization (Mileage, Airfare, Parking, Meals & Per Diem, Lodging, Other)
+- Record expenses by judge and automatically categorize
 - Monitor spending across multiple events and associations
+- Track both reimbursable expenses and taxable fees
 
-### 📄 Professional Invoicing
-- Generate detailed PDF invoices with itemized expenses
+### 📄 Professional Invoicing & Reports
+- Generate detailed PDF invoices with itemized expenses and fees
 - Include session details, dates, times, and floor assignments
-- Automatic calculations with subtotals and grand totals
-- Share invoices via email or save to Files
+- Automatic calculations with subtotals and grand totals (fees for 1099s, reimbursable expenses, total payout)
+- Share invoices via email, save to Files, or print directly
+- Financial reports with visual analytics (pie charts, bar charts)
+- Export data to CSV for external processing
 
 ### 📅 Multi-Event Management
 - Organize expenses by event, association, and date
 - Create custom event structures with days, sessions, and floors
+- **Visual floor identification with customizable colors** (9 color options)
 - Track expenses across unlimited events
+- Import/Export complete meets for backup or transfer
+- Clone event structures to quickly set up similar meets
+- International address support with dynamic field labels
 
-### 👥 Judge Assignment Tools
+### 👥 Judge Management & Assignment
+- Maintain judge database with multiple certification levels per judge
 - Manage judge assignments for complex meet structures
-- Support for multiple sessions, rotations, and apparatus
-- Visual event structure overview
+- Support for multiple sessions, rotations, and apparatus-specific assignments
+- Assign judges to specific floors with visual color coding
+- Track hourly rates, session fees, and role-based bonuses (Meet Referee, Head Judge)
+- Multi-select functionality for bulk judge operations
+- Visual event structure overview with fee calculations
 
-### 📈 Powerful Reporting
-- Combined event reports with full expense breakdowns
-- Judge assignment summaries by floor and session
-- Export all reports as professional PDFs
+### 📈 Powerful Reporting & Analytics
+- Combined event reports with full expense breakdowns by judge
+- Visual expense distribution with interactive pie charts
+- Judge earnings comparison with bar charts
+- Session and floor fee summaries
+- Export comprehensive financial reports as PDF or CSV
 
 ### 🔒 Privacy & Security
 - All data stored locally on your device
@@ -130,12 +156,15 @@ See [PROJECT_PLAN.md](PROJECT_PLAN.md) for the complete project plan.
 
 ## Technology Stack
 
-- **Framework**: Flutter 3.38.4
-- **State Management**: Riverpod
-- **Local Database**: Hive
-- **Routing**: Go Router
-- **PDF Generation**: pdf package
-- **Charts**: FL Chart
+- **Framework**: Flutter 3.24+
+- **State Management**: Riverpod 2.6.1
+- **Local Database**: SQLite (sqflite)
+- **Routing**: Go Router 17.0.0
+- **PDF Generation**: printing 5.14.2, pdf 3.12.0
+- **Charts**: fl_chart 0.70.2
+- **File Handling**: file_picker 10.3.7, share_plus 12.0.1
+- **JSON Serialization**: json_serializable 6.9.4
+- **Image Handling**: image_picker 1.2.0
 
 ## Support
 
