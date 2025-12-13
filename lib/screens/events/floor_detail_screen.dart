@@ -180,49 +180,99 @@ class _FloorDetailScreenState extends ConsumerState<FloorDetailScreen> {
                                     const SizedBox(height: 8),
                                     ...e.value.map((a) => Padding(
                                       padding: const EdgeInsets.only(bottom: 8),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(a.judgeFullName, style: const TextStyle(fontWeight: FontWeight.w500)),
-                                                Text('${a.judgeAssociation} - ${a.judgeLevel}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                      child: Dismissible(
+                                        key: Key(a.id),
+                                        direction: DismissDirection.endToStart,
+                                        background: Container(
+                                          alignment: Alignment.centerRight,
+                                          padding: const EdgeInsets.only(right: 16),
+                                          color: Colors.red,
+                                          child: const Icon(Icons.delete, color: Colors.white),
+                                        ),
+                                        confirmDismiss: (direction) async {
+                                          final confirm = await showDialog<bool>(
+                                            context: context,
+                                            builder: (context) => AlertDialog(
+                                              title: const Text('Remove Judge'),
+                                              content: Text('Remove ${a.judgeFullName} from this floor?'),
+                                              actions: [
+                                                TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                                                TextButton(
+                                                  onPressed: () => Navigator.pop(context, true),
+                                                  child: const Text('Remove', style: TextStyle(color: Colors.red)),
+                                                ),
                                               ],
                                             ),
-                                          ),
-                                          PopupMenuButton<String>(
-                                            onSelected: (choice) {
-                                              if (choice == 'edit') {
-                                                context.push('/assignments/${a.id}/edit?floorId=${floor.id}&sessionId=${session.id}');
-                                              } else if (choice == 'delete') {
-                                                _confirmDeleteAssignment(a, session, floor);
+                                          );
+                                          
+                                          if (confirm == true) {
+                                            try {
+                                              await JudgeAssignmentRepository().deleteAssignment(a.id);
+                                              if (mounted) {
+                                                ref.invalidate(assignmentsByFloorProvider(floor.id));
+                                                ref.invalidate(totalFeesForFloorProvider(floor.id));
+                                                ref.invalidate(totalFeesForSessionProvider(session.id));
+                                                ref.invalidate(totalFeesForDayProvider(session.eventDayId));
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('${a.judgeFullName} removed')),
+                                                );
                                               }
-                                            },
-                                            itemBuilder: (BuildContext context) => [
-                                              const PopupMenuItem(
-                                                value: 'edit',
-                                                child: Row(
-                                                  children: [
-                                                    Icon(Icons.edit, size: 18),
-                                                    SizedBox(width: 8),
-                                                    Text('Edit Fees/Expenses'),
-                                                  ],
-                                                ),
+                                              return true;
+                                            } catch (e) {
+                                              if (mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('Error: $e')),
+                                                );
+                                              }
+                                              return false;
+                                            }
+                                          }
+                                          return false;
+                                        },
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(a.judgeFullName, style: const TextStyle(fontWeight: FontWeight.w500)),
+                                                  Text('${a.judgeAssociation} - ${a.judgeLevel}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                                ],
                                               ),
-                                              const PopupMenuItem(
-                                                value: 'delete',
-                                                child: Row(
-                                                  children: [
-                                                    Icon(Icons.delete, size: 18, color: Colors.red),
-                                                    SizedBox(width: 8),
-                                                    Text('Remove Judge', style: TextStyle(color: Colors.red)),
-                                                  ],
+                                            ),
+                                            PopupMenuButton<String>(
+                                              onSelected: (choice) {
+                                                if (choice == 'edit') {
+                                                  context.push('/assignments/${a.id}/edit?floorId=${floor.id}&sessionId=${session.id}');
+                                                } else if (choice == 'delete') {
+                                                  _confirmDeleteAssignment(a, session, floor);
+                                                }
+                                              },
+                                              itemBuilder: (BuildContext context) => [
+                                                const PopupMenuItem(
+                                                  value: 'edit',
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(Icons.edit, size: 18),
+                                                      SizedBox(width: 8),
+                                                      Text('Edit Fees/Expenses'),
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
+                                                const PopupMenuItem(
+                                                  value: 'delete',
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(Icons.delete, size: 18, color: Colors.red),
+                                                      SizedBox(width: 8),
+                                                      Text('Remove Judge', style: TextStyle(color: Colors.red)),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     )),
                                     const SizedBox(height: 12),
