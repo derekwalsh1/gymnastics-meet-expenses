@@ -25,6 +25,19 @@ class _AddEventFloorScreenState extends ConsumerState<AddEventFloorScreen> {
   final _nameController = TextEditingController();
   final _notesController = TextEditingController();
   bool _isLoading = false;
+  String? _selectedColor;
+
+  final List<Map<String, dynamic>> _floorColors = [
+    {'name': 'Blue', 'value': 'blue', 'color': Colors.blue},
+    {'name': 'Green', 'value': 'green', 'color': Colors.green},
+    {'name': 'White', 'value': 'white', 'color': Colors.white},
+    {'name': 'Black', 'value': 'black', 'color': Colors.black},
+    {'name': 'Pink', 'value': 'pink', 'color': Colors.pink},
+    {'name': 'Yellow', 'value': 'yellow', 'color': Colors.yellow},
+    {'name': 'Orange', 'value': 'orange', 'color': Colors.orange},
+    {'name': 'Lavender', 'value': 'lavender', 'color': const Color(0xFFE6E6FA)},
+    {'name': 'Beige', 'value': 'beige', 'color': const Color(0xFFF5F5DC)},
+  ];
 
   @override
   void dispose() {
@@ -48,6 +61,7 @@ class _AddEventFloorScreenState extends ConsumerState<AddEventFloorScreen> {
         floorNumber: nextFloorNumber,
         name: _nameController.text,
         notes: _notesController.text.isEmpty ? null : _notesController.text,
+        color: _selectedColor,
       );
 
       // Get session to invalidate day fees
@@ -112,6 +126,44 @@ class _AddEventFloorScreenState extends ConsumerState<AddEventFloorScreen> {
                 border: OutlineInputBorder(),
               ),
               maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Floor Color',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: _floorColors.map((colorData) {
+                final isSelected = _selectedColor == colorData['value'];
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedColor = colorData['value']),
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: colorData['color'],
+                      border: Border.all(
+                        color: isSelected ? Colors.blue : Colors.grey.shade400,
+                        width: isSelected ? 3 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: isSelected
+                          ? [BoxShadow(color: Colors.blue.withOpacity(0.3), blurRadius: 8)]
+                          : null,
+                    ),
+                    child: isSelected
+                        ? Icon(
+                            Icons.check,
+                            color: colorData['value'] == 'white' || colorData['value'] == 'yellow' || colorData['value'] == 'beige' ? Colors.black : Colors.white,
+                            size: 30,
+                          )
+                        : null,
+                  ),
+                );
+              }).toList(),
             ),
             const SizedBox(height: 24),
             ElevatedButton(

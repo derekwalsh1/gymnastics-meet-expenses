@@ -13,6 +13,7 @@ class EventFloorRepository {
     required int floorNumber,
     required String name,
     String? notes,
+    String? color,
   }) async {
     final db = await _dbService.database;
     final now = DateTime.now();
@@ -23,6 +24,7 @@ class EventFloorRepository {
       floorNumber: floorNumber,
       name: name,
       notes: notes,
+      color: color,
       createdAt: now,
       updatedAt: now,
     );

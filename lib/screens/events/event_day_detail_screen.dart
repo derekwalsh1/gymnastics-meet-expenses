@@ -267,31 +267,34 @@ class _EventDayDetailScreenState extends ConsumerState<EventDayDetailScreen> {
         onTap: () => context.push('/events/${widget.eventId}/days/${widget.dayId}/sessions/${session.id}'),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              Icon(Icons.schedule, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: 12),
+              Icon(Icons.schedule, color: Theme.of(context).colorScheme.primary, size: 20),
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          'Session ${session.sessionNumber}${(session.name != null && session.name!.trim().isNotEmpty) ? ' (${session.name})' : ''}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        Flexible(
+                          child: Text(
+                            'Session ${session.sessionNumber}${(session.name != null && session.name!.trim().isNotEmpty) ? ' (${session.name})' : ''}',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 4),
                         IconButton(
-                          icon: const Icon(Icons.edit, size: 18),
+                          icon: const Icon(Icons.edit, size: 16),
                           tooltip: 'Edit Session',
                           padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
+                          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
                           onPressed: () => _showInlineEditSessionDialog(context, session),
                         ),
                       ],
@@ -299,24 +302,26 @@ class _EventDayDetailScreenState extends ConsumerState<EventDayDetailScreen> {
                     Text(
                       '${timeFormat.format(startTime)} - ${timeFormat.format(endTime)}',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         color: Colors.grey.shade600,
                       ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               Consumer(
                 builder: (context, ref, child) {
                   final totalAsync = ref.watch(totalFeesForSessionProvider(session.id));
                   return totalAsync.when(
                     data: (total) => Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           '\$${total.toStringAsFixed(2)}',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: Colors.green.shade700,
                           ),
@@ -324,24 +329,25 @@ class _EventDayDetailScreenState extends ConsumerState<EventDayDetailScreen> {
                         Text(
                           'fees',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 10,
                             color: Colors.grey.shade600,
                           ),
                         ),
                       ],
                     ),
                     loading: () => const SizedBox(
-                      width: 20,
-                      height: 20,
+                      width: 16,
+                      height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                     error: (e, stack) => const SizedBox.shrink(),
                   );
                 },
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, size: 20),
+                icon: const Icon(Icons.more_vert, size: 18),
+                padding: EdgeInsets.zero,
                 itemBuilder: (context) => [
                   const PopupMenuItem(
                     value: 'clone',

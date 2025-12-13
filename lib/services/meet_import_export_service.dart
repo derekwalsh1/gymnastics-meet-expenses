@@ -240,6 +240,7 @@ class MeetImportExportService {
                 floorNumber: floorMap['floorNumber'] ?? 1,
                 name: floorMap['name'] ?? 'Floor',
                 notes: floorMap['notes'],
+                color: floorMap['color'],
               );
               
               idMap[oldFloorId] = createdFloor.id;

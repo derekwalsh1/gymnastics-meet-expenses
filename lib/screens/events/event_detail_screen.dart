@@ -88,7 +88,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      childAspectRatio: 1.2,
+      childAspectRatio: 1.3,
       children: [
         _buildActionCard(
           icon: Icons.account_tree,
@@ -132,23 +132,26 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(12.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 40, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(height: 8),
+              Icon(icon, size: 36, color: Theme.of(context).colorScheme.primary),
+              const SizedBox(height: 6),
               Text(
                 title,
                 style: Theme.of(context).textTheme.titleMedium,
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 subtitle,
                 style: Theme.of(context).textTheme.bodySmall,
                 textAlign: TextAlign.center,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ],

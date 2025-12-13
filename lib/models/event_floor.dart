@@ -9,6 +9,7 @@ class EventFloor {
   final int floorNumber;
   final String name;
   final String? notes;
+  final String? color;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -18,9 +19,17 @@ class EventFloor {
     required this.floorNumber,
     required this.name,
     this.notes,
+    this.color,
     required this.createdAt,
     required this.updatedAt,
   });
+
+  String get displayColor {
+    if (color != null) return color!;
+    // Default colors based on floor number
+    const defaultColors = ['blue', 'green', 'yellow', 'orange', 'pink', 'lavender', 'white', 'beige', 'black'];
+    return defaultColors[(floorNumber - 1) % defaultColors.length];
+  }
 
   EventFloor copyWith({
     String? id,
@@ -28,6 +37,7 @@ class EventFloor {
     int? floorNumber,
     String? name,
     String? notes,
+    String? color,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -37,6 +47,7 @@ class EventFloor {
       floorNumber: floorNumber ?? this.floorNumber,
       name: name ?? this.name,
       notes: notes ?? this.notes,
+      color: color ?? this.color,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -53,6 +64,7 @@ class EventFloor {
       'floorNumber': floorNumber,
       'name': name,
       'notes': notes,
+      'color': color,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -65,6 +77,7 @@ class EventFloor {
       floorNumber: map['floorNumber'] as int,
       name: map['name'] as String,
       notes: map['notes'] as String?,
+      color: map['color'] as String?,
       createdAt: DateTime.parse(map['createdAt'] as String),
       updatedAt: DateTime.parse(map['updatedAt'] as String),
     );

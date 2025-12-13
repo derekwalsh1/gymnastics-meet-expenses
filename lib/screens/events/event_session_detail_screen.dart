@@ -63,20 +63,7 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Session ${session.sessionNumber}${(session.name != null && session.name!.trim().isNotEmpty) ? ' (${session.name})' : ''}'),
-            const SizedBox(width: 6),
-            IconButton(
-              icon: const Icon(Icons.edit, size: 20),
-              tooltip: 'Edit Session',
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              onPressed: () => _showEditSessionDialog(context, session),
-            ),
-          ],
-        ),
+        title: Text('Session ${session.sessionNumber}'),
         actions: [
           IconButton(
             icon: const Icon(Icons.access_time),
@@ -139,6 +126,26 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (session.name != null && session.name!.trim().isNotEmpty) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          session.name!,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit, size: 18),
+                        tooltip: 'Edit Session',
+                        onPressed: () => _showEditSessionDialog(context, session),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 Text(
                   '${timeFormat.format(startTime)} - ${timeFormat.format(endTime)}',
                   style: Theme.of(context).textTheme.headlineSmall,
@@ -227,70 +234,110 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
     );
   }
 
+  Widget _buildFloorColorIcon(EventFloor floor) {
+    Color getFloorColor(String colorName) {
+      switch (colorName) {
+        case 'blue':
+          return Colors.blue;
+        case 'green':
+          return Colors.green;
+        case 'white':
+          return Colors.white;
+        case 'black':
+          return Colors.black;
+        case 'pink':
+          return Colors.pink;
+        case 'yellow':
+          return Colors.yellow;
+        case 'orange':
+          return Colors.orange;
+        case 'lavender':
+          return const Color(0xFFE6E6FA);
+        case 'beige':
+          return const Color(0xFFF5F5DC);
+        default:
+          return Colors.blue;
+      }
+    }
+
+    final color = getFloorColor(floor.displayColor);
+    
+    return Container(
+      width: 20,
+      height: 20,
+      decoration: BoxDecoration(
+        color: color,
+        border: Border.all(color: Colors.grey.shade400, width: 1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+    );
+  }
+
   Widget _buildFloorCard(BuildContext context, EventSession session, EventFloor floor) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () => context.push('/events/${widget.eventId}/days/${widget.dayId}/sessions/${widget.sessionId}/floors/${floor.id}'),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Icon(Icons.layers, color: Theme.of(context).colorScheme.primary),
-                  const SizedBox(width: 12),
+                  _buildFloorColorIcon(floor),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Floor ${floor.floorNumber}${(floor.name.trim().isNotEmpty) ? ' (${floor.name})' : ''}',
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(width: 6),
-                            IconButton(
-                              icon: const Icon(Icons.edit, size: 18),
-                              tooltip: 'Edit Floor',
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              onPressed: () => _showEditFloorDialog(context, session, floor),
-                            ),
-                          ],
+                        Flexible(
+                          child: Text(
+                            'Floor ${floor.floorNumber}${(floor.name.trim().isNotEmpty) ? ' (${floor.name})' : ''}',
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        IconButton(
+                          icon: const Icon(Icons.edit, size: 16),
+                          tooltip: 'Edit Floor',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                          onPressed: () => _showEditFloorDialog(context, session, floor),
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Consumer(
                     builder: (context, ref, child) {
                       final totalAsync = ref.watch(totalFeesForFloorProvider(floor.id));
                       return totalAsync.when(
                         data: (total) => Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               '\$${total.toStringAsFixed(2)}',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green.shade700),
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.green.shade700),
                             ),
-                            Text('fees', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                            Text('fees', style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
                           ],
                         ),
                         loading: () => const SizedBox(
-                          width: 20,
-                          height: 20,
+                          width: 16,
+                          height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                         error: (e, stack) => const SizedBox.shrink(),
                       );
                     },
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
                   PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert, size: 20),
+                    icon: const Icon(Icons.more_vert, size: 18),
+                    padding: EdgeInsets.zero,
                     itemBuilder: (context) => const [
                       PopupMenuItem(
                         value: 'edit',
@@ -693,10 +740,10 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
   }
 
   Future<void> _showEditFloorDialog(BuildContext context, EventSession session, EventFloor floor) async {
-    final result = await showDialog<Map<String, String>?>(
+    final result = await showDialog<Map<String, String?>?>(
       context: context,
       builder: (context) {
-        return _EditFloorDialog(initialName: floor.name, initialNotes: floor.notes ?? '');
+        return _EditFloorDialog(initialName: floor.name, initialNotes: floor.notes ?? '', initialColor: floor.color);
       },
     );
 
@@ -705,6 +752,7 @@ class _EventSessionDetailScreenState extends ConsumerState<EventSessionDetailScr
         final updated = floor.copyWith(
           name: result['name']!,
           notes: result['notes']!.isEmpty ? null : result['notes'],
+          color: result['color'],
           updatedAt: DateTime.now(),
         );
         
@@ -1021,8 +1069,9 @@ class _EditSessionDialogState extends State<_EditSessionDialog> {
 class _EditFloorDialog extends StatefulWidget {
   final String initialName;
   final String initialNotes;
+  final String? initialColor;
 
-  const _EditFloorDialog({required this.initialName, required this.initialNotes});
+  const _EditFloorDialog({required this.initialName, required this.initialNotes, this.initialColor});
 
   @override
   State<_EditFloorDialog> createState() => _EditFloorDialogState();
@@ -1031,12 +1080,26 @@ class _EditFloorDialog extends StatefulWidget {
 class _EditFloorDialogState extends State<_EditFloorDialog> {
   late final TextEditingController _nameController;
   late final TextEditingController _notesController;
+  late String? _selectedColor;
+
+  final List<Map<String, dynamic>> _floorColors = [
+    {'name': 'Blue', 'value': 'blue', 'color': Colors.blue},
+    {'name': 'Green', 'value': 'green', 'color': Colors.green},
+    {'name': 'White', 'value': 'white', 'color': Colors.white},
+    {'name': 'Black', 'value': 'black', 'color': Colors.black},
+    {'name': 'Pink', 'value': 'pink', 'color': Colors.pink},
+    {'name': 'Yellow', 'value': 'yellow', 'color': Colors.yellow},
+    {'name': 'Orange', 'value': 'orange', 'color': Colors.orange},
+    {'name': 'Lavender', 'value': 'lavender', 'color': const Color(0xFFE6E6FA)},
+    {'name': 'Beige', 'value': 'beige', 'color': const Color(0xFFF5F5DC)},
+  ];
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.initialName);
     _notesController = TextEditingController(text: widget.initialNotes);
+    _selectedColor = widget.initialColor;
   }
 
   @override
@@ -1069,6 +1132,44 @@ class _EditFloorDialogState extends State<_EditFloorDialog> {
               border: OutlineInputBorder(),
             ),
             maxLines: 3,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Floor Color',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: _floorColors.map((colorData) {
+              final isSelected = _selectedColor == colorData['value'];
+              return GestureDetector(
+                onTap: () => setState(() => _selectedColor = colorData['value']),
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: colorData['color'],
+                    border: Border.all(
+                      color: isSelected ? Colors.blue : Colors.grey.shade400,
+                      width: isSelected ? 3 : 1,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: isSelected
+                        ? [BoxShadow(color: Colors.blue.withOpacity(0.3), blurRadius: 8)]
+                        : null,
+                  ),
+                  child: isSelected
+                      ? Icon(
+                          Icons.check,
+                          color: colorData['value'] == 'white' || colorData['value'] == 'yellow' || colorData['value'] == 'beige' ? Colors.black : Colors.white,
+                          size: 24,
+                        )
+                      : null,
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),

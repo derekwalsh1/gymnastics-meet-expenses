@@ -83,9 +83,45 @@ class EventsListScreen extends ConsumerWidget {
           child: Text('Error loading events: $error'),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/events/create'),
-        child: const Icon(Icons.add),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            onPressed: () => _showImportDialog(context, ref),
+            heroTag: 'import',
+            child: const Icon(Icons.file_upload),
+          ),
+          const SizedBox(width: 16),
+          FloatingActionButton(
+            onPressed: () => context.push('/events/create'),
+            heroTag: 'add',
+            child: const Icon(Icons.add),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showImportDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Import Meet'),
+        content: const Text('Would you like to import a meet from a JSON file?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.push('/import-meet');
+            },
+            child: const Text('Select File'),
+          ),
+        ],
       ),
     );
   }

@@ -727,7 +727,6 @@ class _AddRoleFeeDialogState extends ConsumerState<_AddRoleFeeDialog> {
                   border: OutlineInputBorder(),
                 ),
                 textCapitalization: TextCapitalization.words,
-                validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(

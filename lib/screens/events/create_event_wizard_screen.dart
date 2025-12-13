@@ -30,6 +30,7 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
   final _stateController = TextEditingController();
   final _zipController = TextEditingController();
   final _descriptionController = TextEditingController();
+  String _country = 'United States';
   DateTime? _startDate;
   String? _selectedAssociationId;
 
@@ -252,16 +253,43 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
   Widget _buildStepIndicator() {
     return Container(
       padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          _buildStepCircle(0, 'Info'),
-          Expanded(child: _buildStepLine(0)),
-          _buildStepCircle(1, 'Template'),
-          Expanded(child: _buildStepLine(1)),
-          _buildStepCircle(2, 'Structure'),
-          Expanded(child: _buildStepLine(2)),
-          _buildStepCircle(3, 'Review'),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 360;
+          final children = [
+            _buildStepCircle(0, 'Info'),
+            _buildStepLine(0),
+            _buildStepCircle(1, 'Template'),
+            _buildStepLine(1),
+            _buildStepCircle(2, 'Structure'),
+            _buildStepLine(2),
+            _buildStepCircle(3, 'Review'),
+          ];
+
+          if (isNarrow) {
+            return Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: children.map((w) {
+                if (w is Expanded) return w.child; // remove Expanded in Wrap
+                return w;
+              }).toList(),
+            );
+          }
+
+          return Row(
+            children: [
+              _buildStepCircle(0, 'Info'),
+              Expanded(child: _buildStepLine(0)),
+              _buildStepCircle(1, 'Template'),
+              Expanded(child: _buildStepLine(1)),
+              _buildStepCircle(2, 'Structure'),
+              Expanded(child: _buildStepLine(2)),
+              _buildStepCircle(3, 'Review'),
+            ],
+          );
+        },
       ),
     );
   }
@@ -396,42 +424,55 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
           ),
           const SizedBox(height: 16),
 
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: TextFormField(
-                  controller: _cityController,
-                  decoration: const InputDecoration(
-                    labelText: 'City *',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextFormField(
-                  controller: _stateController,
-                  decoration: const InputDecoration(
-                    labelText: 'State *',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextFormField(
-                  controller: _zipController,
-                  decoration: const InputDecoration(
-                    labelText: 'Zip *',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
-                ),
-              ),
-            ],
+          // Country selector (defaults to United States)
+          DropdownButtonFormField<String>(
+            value: _country,
+            decoration: const InputDecoration(
+              labelText: 'Country *',
+              border: OutlineInputBorder(),
+            ),
+            items: const [
+              'United States',
+              'Canada',
+              'United Kingdom',
+              'Australia',
+              'Germany',
+              'France',
+              'Mexico',
+              'Other',
+            ].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+            onChanged: (value) => setState(() => _country = value ?? 'United States'),
+            validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            controller: _cityController,
+            decoration: const InputDecoration(
+              labelText: 'City *',
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            controller: _stateController,
+            decoration: InputDecoration(
+              labelText: _country == 'United States' ? 'State *' : 'State/Province *',
+              border: const OutlineInputBorder(),
+            ),
+            validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            controller: _zipController,
+            decoration: InputDecoration(
+              labelText: _country == 'United States' ? 'Zip *' : 'Postal Code *',
+              border: const OutlineInputBorder(),
+            ),
+            validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
           ),
           const SizedBox(height: 16),
 
@@ -718,23 +759,52 @@ class _CreateEventWizardScreenState extends ConsumerState<CreateEventWizardScree
           ),
         ],
       ),
-      child: Row(
-        children: [
-          if (_currentStep > 0)
-            Expanded(
-              child: OutlinedButton(
-                onPressed: _previousStep,
-                child: const Text('Back'),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 360;
+          if (isNarrow) {
+            // Stack buttons vertically for small widths
+            return Column(
+              children: [
+                if (_currentStep > 0)
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: _previousStep,
+                      child: const Text('Back'),
+                    ),
+                  ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _currentStep == 3 ? _createEvent : _nextStep,
+                    child: Text(_currentStep == 3 ? 'Create Event' : 'Next'),
+                  ),
+                ),
+              ],
+            );
+          }
+          // Default horizontal layout
+          return Row(
+            children: [
+              if (_currentStep > 0)
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _previousStep,
+                    child: const Text('Back'),
+                  ),
+                ),
+              if (_currentStep > 0) const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _currentStep == 3 ? _createEvent : _nextStep,
+                  child: Text(_currentStep == 3 ? 'Create Event' : 'Next'),
+                ),
               ),
-            ),
-          if (_currentStep > 0) const SizedBox(width: 16),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _currentStep == 3 ? _createEvent : _nextStep,
-              child: Text(_currentStep == 3 ? 'Create Event' : 'Next'),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }

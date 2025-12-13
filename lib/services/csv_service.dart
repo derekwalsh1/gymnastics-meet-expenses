@@ -28,7 +28,6 @@ class CsvService {
     buffer.writeln(_escapeCsvRow([
       'Event',
       'Judge Name',
-      'Judge ID',
       'Total Fees (1099 Amount)',
       'Total Expenses',
       'Check Amount',
@@ -40,7 +39,6 @@ class CsvService {
       buffer.writeln(_escapeCsvRow([
         report.eventName ?? '',
         summary.judgeName,
-        summary.judgeId,
         summary.totalFees.toStringAsFixed(2),
         summary.totalExpenses.toStringAsFixed(2),
         summary.totalOwed.toStringAsFixed(2),
@@ -52,7 +50,6 @@ class CsvService {
     buffer.writeln(_escapeCsvRow([
       '',
       'TOTAL',
-      '',
       report.totalFees.toStringAsFixed(2),
       report.totalExpenses.toStringAsFixed(2),
       report.totalOwed.toStringAsFixed(2),
@@ -89,23 +86,6 @@ class CsvService {
         ]));
       }
     }
-    
-    // Summary section
-    buffer.writeln(''); // Blank line
-    buffer.writeln(_escapeCsvRow(['Expense Summary by Category']));
-    buffer.writeln(_escapeCsvRow(['Category', 'Total Amount']));
-    
-    for (final entry in report.expensesByCategory.entries) {
-      buffer.writeln(_escapeCsvRow([
-        _getCategoryDisplayName(entry.key),
-        entry.value.toStringAsFixed(2),
-      ]));
-    }
-    
-    buffer.writeln(_escapeCsvRow([
-      'TOTAL',
-      report.totalExpenses.toStringAsFixed(2),
-    ]));
     
     final fileName = 'expenses_${report.eventId}_$timestamp.csv';
     final file = File('${directory.path}/$fileName');

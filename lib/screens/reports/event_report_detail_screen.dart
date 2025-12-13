@@ -290,17 +290,22 @@ class _EventReportDetailScreenState extends ConsumerState<EventReportDetailScree
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: isLarge ? 18 : 16,
-              fontWeight: isLarge ? FontWeight.bold : FontWeight.normal,
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: isLarge ? 17 : 15,
+                fontWeight: isLarge ? FontWeight.bold : FontWeight.normal,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
+          const SizedBox(width: 8),
           Text(
             '\$${amount.toStringAsFixed(2)}',
             style: TextStyle(
-              fontSize: isLarge ? 20 : 16,
+              fontSize: isLarge ? 18 : 15,
               fontWeight: FontWeight.bold,
               color: color,
             ),

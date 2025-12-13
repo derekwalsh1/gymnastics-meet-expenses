@@ -20,7 +20,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -209,6 +209,7 @@ class DatabaseService {
           floorNumber INTEGER NOT NULL,
           name TEXT NOT NULL,
           notes TEXT,
+          color TEXT,
           createdAt TEXT NOT NULL,
           updatedAt TEXT NOT NULL,
           FOREIGN KEY (eventSessionId) REFERENCES event_sessions(id) ON DELETE CASCADE,
@@ -268,6 +269,11 @@ class DatabaseService {
     if (oldVersion < 5) {
       // Migration to version 5: apparatus per assignment
       await db.execute('ALTER TABLE judge_assignments ADD COLUMN apparatus TEXT');
+    }
+
+    if (oldVersion < 6) {
+      // Migration to version 6: floor colors
+      await db.execute('ALTER TABLE event_floors ADD COLUMN color TEXT');
     }
   }
 
