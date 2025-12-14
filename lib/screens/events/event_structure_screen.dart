@@ -224,8 +224,11 @@ class _EventStructureScreenState extends ConsumerState<EventStructureScreen> {
     final shortDateFormat = DateFormat('M/d/yy');
     final timeFormat = DateFormat('h:mm a');
     
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
+    
     return Table(
-      border: TableBorder.all(color: Colors.grey.shade300, width: 2),
+      border: TableBorder.all(color: borderColor, width: 2),
       defaultColumnWidth: const FlexColumnWidth(),
       columnWidths: const {
         0: FlexColumnWidth(1),
@@ -302,7 +305,9 @@ class _EventStructureScreenState extends ConsumerState<EventStructureScreen> {
             ),
             // Apparatus headers
             TableRow(
-              decoration: BoxDecoration(color: Colors.grey.shade200),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+              ),
               children: const [
                 Padding(
                   padding: EdgeInsets.all(8),
@@ -330,7 +335,9 @@ class _EventStructureScreenState extends ConsumerState<EventStructureScreen> {
             for (int i = 0; i < session['maxJudges']; i++)
               TableRow(
                 decoration: BoxDecoration(
-                  color: i.isEven ? Colors.white : Colors.grey.shade50,
+                  color: i.isEven 
+                    ? (isDark ? Colors.grey.shade900 : Colors.white)
+                    : (isDark ? Colors.grey.shade800 : Colors.grey.shade50),
                 ),
                 children: [
                   for (final apparatus in ['Vault', 'Bars', 'Beam', 'Floor', 'Other'])

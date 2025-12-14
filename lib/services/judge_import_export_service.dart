@@ -356,7 +356,7 @@ class JudgeImportExportService {
       0: _LegacyLevelMapping('NAWGJ', '4-5', 19.0, 2),
       1: _LegacyLevelMapping('NAWGJ', '6-8', 21.0, 1),
       2: _LegacyLevelMapping('NAWGJ', '4-8', 23.0, 2),
-      3: _LegacyLevelMapping('NAWGJ', 'Nine', 27.0, 3),
+      3: _LegacyLevelMapping('NAWGJ', '9', 27.0, 3),
       4: _LegacyLevelMapping('NAWGJ', 'Ten', 31.0, 4),
       5: _LegacyLevelMapping('NAWGJ', 'National', 34.0, 6),
       6: _LegacyLevelMapping('NAWGJ', 'Brevet', 37.0, 5),

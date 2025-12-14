@@ -20,7 +20,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 6,
+      version: 8,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -275,6 +275,40 @@ class DatabaseService {
       // Migration to version 6: floor colors
       await db.execute('ALTER TABLE event_floors ADD COLUMN color TEXT');
     }
+
+    if (oldVersion < 7) {
+      // Migration to version 7: update NAWGJ judge level names from "Nine" and "Ten" to "9" and "10"
+      await db.execute("UPDATE judge_levels SET level = '9' WHERE association = 'NAWGJ' AND level = 'Nine'");
+      await db.execute("UPDATE judge_levels SET level = '10' WHERE association = 'NAWGJ' AND level = 'Ten'");
+      await db.execute("UPDATE judge_levels SET id = 'NAWGJ-9' WHERE association = 'NAWGJ' AND level = '9'");
+      await db.execute("UPDATE judge_levels SET id = 'NAWGJ-10' WHERE association = 'NAWGJ' AND level = '10'");
+    }
+
+    if (oldVersion < 8) {
+      // Migration to version 8: update all judge level rates and order, add NAWGJ 4-8
+      final now = DateTime.now().toIso8601String();
+      
+      // Update NAWGJ levels
+      await db.execute("UPDATE judge_levels SET defaultHourlyRate = 19.0, sortOrder = 1 WHERE association = 'NAWGJ' AND level = '4-5'");
+      await db.execute("UPDATE judge_levels SET defaultHourlyRate = 21.0, sortOrder = 2 WHERE association = 'NAWGJ' AND level = '6-8'");
+      await db.execute("UPDATE judge_levels SET defaultHourlyRate = 27.0, sortOrder = 4 WHERE association = 'NAWGJ' AND level = '9'");
+      await db.execute("UPDATE judge_levels SET defaultHourlyRate = 31.0, sortOrder = 5 WHERE association = 'NAWGJ' AND level = '10'");
+      await db.execute("UPDATE judge_levels SET defaultHourlyRate = 34.0, sortOrder = 6 WHERE association = 'NAWGJ' AND level = 'National'");
+      await db.execute("UPDATE judge_levels SET defaultHourlyRate = 37.0, sortOrder = 7 WHERE association = 'NAWGJ' AND level = 'Brevet'");
+      
+      // Add NAWGJ 4-8 level if it doesn't exist
+      await db.execute('''
+        INSERT OR IGNORE INTO judge_levels (id, association, level, defaultHourlyRate, sortOrder, createdAt, updatedAt, isArchived)
+        VALUES ('NAWGJ-4-8', 'NAWGJ', '4-8', 23.0, 3, '$now', '$now', 0)
+      ''');
+      
+      // Update NGA levels
+      await db.execute("UPDATE judge_levels SET defaultHourlyRate = 23.0, sortOrder = 8 WHERE association = 'NGA' AND level = 'Local'");
+      await db.execute("UPDATE judge_levels SET defaultHourlyRate = 27.0, sortOrder = 9 WHERE association = 'NGA' AND level = 'State'");
+      await db.execute("UPDATE judge_levels SET defaultHourlyRate = 31.0, sortOrder = 10 WHERE association = 'NGA' AND level = 'Regional'");
+      await db.execute("UPDATE judge_levels SET defaultHourlyRate = 34.0, sortOrder = 11 WHERE association = 'NGA' AND level = 'National'");
+      await db.execute("UPDATE judge_levels SET defaultHourlyRate = 37.0, sortOrder = 12 WHERE association = 'NGA' AND level = 'Elite'");
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -378,7 +412,7 @@ class DatabaseService {
       )
     ''');
 
-    // Event Floors table (version 4)
+    // Event Floors table (version 4, color added in version 6)
     await db.execute('''
       CREATE TABLE event_floors (
         id TEXT PRIMARY KEY,
@@ -386,6 +420,7 @@ class DatabaseService {
         floorNumber INTEGER NOT NULL,
         name TEXT NOT NULL,
         notes TEXT,
+        color TEXT,
         createdAt TEXT NOT NULL,
         updatedAt TEXT NOT NULL,
         FOREIGN KEY (eventSessionId) REFERENCES event_sessions(id) ON DELETE CASCADE,
@@ -485,18 +520,19 @@ class DatabaseService {
     
     final defaultLevels = [
       // NAWGJ levels
-      {'association': 'NAWGJ', 'level': '4-5', 'rate': 20.0, 'order': 1},
-      {'association': 'NAWGJ', 'level': '6-8', 'rate': 25.0, 'order': 2},
-      {'association': 'NAWGJ', 'level': 'Nine', 'rate': 30.0, 'order': 3},
-      {'association': 'NAWGJ', 'level': 'Ten', 'rate': 35.0, 'order': 4},
-      {'association': 'NAWGJ', 'level': 'Brevet', 'rate': 40.0, 'order': 5},
-      {'association': 'NAWGJ', 'level': 'National', 'rate': 50.0, 'order': 6},
+      {'association': 'NAWGJ', 'level': '4-5', 'rate': 19.0, 'order': 1},
+      {'association': 'NAWGJ', 'level': '6-8', 'rate': 21.0, 'order': 2},
+      {'association': 'NAWGJ', 'level': '4-8', 'rate': 23.0, 'order': 3},
+      {'association': 'NAWGJ', 'level': '9', 'rate': 27.0, 'order': 4},
+      {'association': 'NAWGJ', 'level': '10', 'rate': 31.0, 'order': 5},
+      {'association': 'NAWGJ', 'level': 'National', 'rate': 34.0, 'order': 6},
+      {'association': 'NAWGJ', 'level': 'Brevet', 'rate': 37.0, 'order': 7},
       // NGA levels
-      {'association': 'NGA', 'level': 'Local', 'rate': 15.0, 'order': 7},
-      {'association': 'NGA', 'level': 'State', 'rate': 20.0, 'order': 8},
-      {'association': 'NGA', 'level': 'Regional', 'rate': 25.0, 'order': 9},
-      {'association': 'NGA', 'level': 'National', 'rate': 35.0, 'order': 10},
-      {'association': 'NGA', 'level': 'Elite', 'rate': 45.0, 'order': 11},
+      {'association': 'NGA', 'level': 'Local', 'rate': 23.0, 'order': 8},
+      {'association': 'NGA', 'level': 'State', 'rate': 27.0, 'order': 9},
+      {'association': 'NGA', 'level': 'Regional', 'rate': 31.0, 'order': 10},
+      {'association': 'NGA', 'level': 'National', 'rate': 34.0, 'order': 11},
+      {'association': 'NGA', 'level': 'Elite', 'rate': 37.0, 'order': 12},
     ];
 
     for (final level in defaultLevels) {

@@ -158,7 +158,7 @@ class _AddEditJudgeLevelScreenState extends ConsumerState<AddEditJudgeLevelScree
                       controller: _levelController,
                       decoration: const InputDecoration(
                         labelText: 'Level',
-                        hintText: 'e.g., Nine, Ten, Elite',
+                        hintText: 'e.g., 9, 10, Elite',
                         border: OutlineInputBorder(),
                       ),
                       textCapitalization: TextCapitalization.words,
