@@ -971,15 +971,27 @@ class _EventReportDetailScreenState extends ConsumerState<EventReportDetailScree
       // Close loading dialog
       Navigator.of(context).pop();
       
-      // Use Printing.sharePdf which works reliably on all platforms including simulator
+      // Wait a bit for the dialog to fully close before opening share sheet
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      if (!context.mounted) return;
+      
+      // Use share_plus for better iPad support (handles popovers correctly)
       try {
-        final pdfBytes = await file.readAsBytes();
         if (context.mounted) {
           // Sanitize filename for sharing
           final sanitizedEventName = event.name.replaceAll(RegExp(r'[^\w\s-]'), '').replaceAll(' ', '_');
-          await Printing.sharePdf(
-            bytes: pdfBytes,
-            filename: 'combined_invoices_$sanitizedEventName.pdf',
+          
+          // Get screen size for iPad popover positioning
+          final box = context.findRenderObject() as RenderBox?;
+          final sharePositionOrigin = box != null
+              ? box.localToGlobal(Offset.zero) & box.size
+              : null;
+          
+          await Share.shareXFiles(
+            [XFile(file.path, mimeType: 'application/pdf')],
+            subject: 'Combined Invoices - ${event.name}',
+            sharePositionOrigin: sharePositionOrigin,
           );
           print('[COMBINED] PDF opened for printing/sharing');
         }
